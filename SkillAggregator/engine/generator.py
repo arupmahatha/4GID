@@ -2,11 +2,19 @@ from typing import Dict, List
 from anthropic import Anthropic
 from config import Config
 from .metadata import FinancialTableMetadata, LearningAnalyticsMetadata
+import os
+from dotenv import load_dotenv
 
 class SQLGenerator:
-    def __init__(self, llm):
-        # Store the wrapped client directly
-        self.llm = llm
+    def __init__(self):
+        # Load environment variables
+        load_dotenv()
+        api_key = os.getenv("ANTHROPIC_API_KEY")
+        if not api_key:
+            raise ValueError("API key is required")
+        
+        # Initialize the LLM directly with the provided API key
+        self.llm = get_test_llm("sonnet", api_key=api_key)  # LLM is now initialized here
         self.metadata = LearningAnalyticsMetadata()
 
     def _call_llm(self, prompt: str) -> str:

@@ -4,10 +4,20 @@ from config import Config
 from engine.metadata import FinancialTableMetadata, LearningAnalyticsMetadata
 from fuzzywuzzy import fuzz
 from utils.search import search_financial_terms_without_threshold
+from utils.llm import get_test_llm
+import os
+from dotenv import load_dotenv
 
 class QueryDecomposer:
-    def __init__(self, llm: Anthropic):
-        self.llm = Anthropic(api_key=llm.api_key)  # Create new instance for Haiku
+    def __init__(self):
+        # Load environment variables
+        load_dotenv()
+        api_key = os.getenv("ANTHROPIC_API_KEY")
+        if not api_key:
+            raise ValueError("API key is required")
+        
+        # Initialize the LLM directly with the provided API key
+        self.llm = get_test_llm("sonnet", api_key=api_key)  # LLM is now initialized here
         self.matcher = None
         self.financial_terms = {}
         self.metadata = LearningAnalyticsMetadata()

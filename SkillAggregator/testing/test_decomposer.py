@@ -6,21 +6,10 @@ sys.path.append(project_root)
 from engine.decomposer import QueryDecomposer
 from testing import get_test_llm
 
-def test_decomposer(api_key=None):
+def test_decomposer():
     """Test QueryDecomposer functionality"""
-    if not api_key:
-        # For local testing, try to get from environment
-        from dotenv import load_dotenv
-        load_dotenv()
-        api_key = os.getenv("ANTHROPIC_API_KEY")
-        
-    if not api_key:
-        raise ValueError("API key is required")
-    
-    # Initialize with Haiku model
-    llm = get_test_llm("sonnet", api_key=api_key)
-    decomposer = QueryDecomposer(llm)
-    
+    decomposer = QueryDecomposer()  # No need to pass API key
+
     # Test query
     test_query = "what is the room sold of hilton garden for the month of november 2023?"
     
