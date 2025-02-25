@@ -4,7 +4,7 @@ project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(project_root)
 
 from engine.executor import SQLExecutor
-from testing import get_test_db_connection
+from test_engine import get_test_db_connection
 
 def test_executor():
     """Test SQLExecutor functionality"""

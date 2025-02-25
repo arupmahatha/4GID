@@ -4,7 +4,7 @@ project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(project_root)
 
 from engine.decomposer import QueryDecomposer
-from testing import get_test_llm
+from test_engine import get_test_llm
 
 def test_decomposer():
     """Test QueryDecomposer functionality"""

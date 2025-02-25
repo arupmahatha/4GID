@@ -1,44 +1,17 @@
 from typing import Dict, List
-from anthropic import Anthropic
 from config import Config
-from .metadata import FinancialTableMetadata, LearningAnalyticsMetadata
+from ...metadata import LearningAnalyticsMetadata
 import os
-from dotenv import load_dotenv
+from .llm_call import get_test_llm
 
 class SQLGenerator:
     def __init__(self):
-        # Load environment variables
-        load_dotenv()
-        api_key = os.getenv("ANTHROPIC_API_KEY")
-        if not api_key:
-            raise ValueError("API key is required")
-        
-        # Initialize the LLM directly with the provided API key
-        self.llm = get_test_llm("sonnet", api_key=api_key)  # LLM is now initialized here
+        # Initialize the LLM directly without loading environment variables
+        self.llm = get_test_llm("sonnet")  # LLM is now initialized here
         self.metadata = LearningAnalyticsMetadata()
-
-    def _call_llm(self, prompt: str) -> str:
-        """Helper method to call Claude with consistent parameters"""
-        # Use the wrapped client's direct call method
-        if hasattr(self.llm, 'invoke'):
-            response = self.llm.invoke(prompt)
-            return response.content
-        elif hasattr(self.llm, 'messages'):
-            # Direct Anthropic client call with Sonnet model
-            response = self.llm.messages.create(
-                model=Config.sonnet_model,
-                messages=[{"role": "user", "content": prompt}],
-                temperature=0,
-                max_tokens=1000
-            )
-            return response.content[0].text
-        else:
-            # Direct call to the wrapped function
-            return self.llm(prompt)
 
     def generate_sql(self, query_info: Dict) -> str:
         """Generate SQL for learning analytics queries"""
-        # Modify to generate SQL for student performance tracking
         prompt = f"""Generate a SQL query for learning analytics:
 
 Query: {query_info['sub_query']}
@@ -51,7 +24,12 @@ Requirements:
 4. Consider student progress and engagement metrics
 """
 
-        sql_query = self._call_llm(prompt).strip()
+        sql_query = self.llm.messages.create(
+            model=Config.sonnet_model,
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0,
+            max_tokens=1000
+        ).content[0].text.strip()
         
         # Basic validation
         if not sql_query.lower().startswith('select'):

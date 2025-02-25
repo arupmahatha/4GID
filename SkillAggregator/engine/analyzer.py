@@ -1,38 +1,9 @@
 from typing import Dict, List
-from anthropic import Anthropic
-from config import Config
-import os
-from dotenv import load_dotenv
+from .llm_call import get_test_llm
 
 class SQLAnalyzer:
     def __init__(self):
-        # Load environment variables
-        load_dotenv()
-        api_key = os.getenv("ANTHROPIC_API_KEY")
-        if not api_key:
-            raise ValueError("API key is required")
-        
-        # Initialize the LLM directly with the provided API key
-        self.llm = get_test_llm("haiku", api_key=api_key)  # LLM is now initialized here
-
-    def _call_llm(self, prompt: str) -> str:
-        """Helper method to call Claude with consistent parameters"""
-        # Use the wrapped client's direct call method
-        if hasattr(self.llm, 'invoke'):
-            response = self.llm.invoke(prompt)
-            return response.content
-        elif hasattr(self.llm, 'messages'):
-            # Direct Anthropic client call with Haiku model
-            response = self.llm.messages.create(
-                model=Config.haiku_model,
-                messages=[{"role": "user", "content": prompt}],
-                temperature=0,
-                max_tokens=1000
-            )
-            return response.content[0].text
-        else:
-            # Direct call to the wrapped function
-            return self.llm(prompt)
+        self.llm = get_test_llm("haiku")  # LLM is now initialized here
 
     def analyze_results(self, query_info: Dict, sub_query_results: List[Dict]) -> Dict:
         """Analyze SQL query results from multiple sub-queries and generate comprehensive insights"""
@@ -63,7 +34,7 @@ class SQLAnalyzer:
             """
             
             # Get analysis from LLM
-            response_text = self._call_llm(prompt)
+            response_text = self.llm(prompt)
 
             # Clean and parse the response
             import json

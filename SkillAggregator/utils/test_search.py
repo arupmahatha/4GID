@@ -10,7 +10,7 @@ sys.path.append(project_root)
 
 # Now import the modules after adding to path
 from utils.search import search_financial_terms_without_threshold, extract_entities_from_llm
-from engine.metadata import FinancialTableMetadata
+from metadata import FinancialTableMetadata
 from testing import get_test_llm  # Import the utility function
 
 class TestSearchFinancialTerms(unittest.TestCase):

@@ -1,36 +1,18 @@
 from typing import List, Dict
 from anthropic import Anthropic
 from config import Config
-from engine.metadata import FinancialTableMetadata, LearningAnalyticsMetadata
+from metadata import FinancialTableMetadata, LearningAnalyticsMetadata
 from fuzzywuzzy import fuzz
 from utils.search import search_financial_terms_without_threshold
-from utils.llm import get_test_llm
-import os
-from dotenv import load_dotenv
+from .llm_call import get_test_llm
 
 class QueryDecomposer:
     def __init__(self):
-        # Load environment variables
-        load_dotenv()
-        api_key = os.getenv("ANTHROPIC_API_KEY")
-        if not api_key:
-            raise ValueError("API key is required")
-        
-        # Initialize the LLM directly with the provided API key
-        self.llm = get_test_llm("sonnet", api_key=api_key)  # LLM is now initialized here
+        # Initialize the LLM directly without loading environment variables
+        self.llm = get_test_llm("sonnet")  # LLM is now initialized here
         self.matcher = None
         self.financial_terms = {}
         self.metadata = LearningAnalyticsMetadata()
-
-    def _call_llm(self, prompt: str) -> str:
-        """Helper method to call Claude Haiku with consistent parameters"""
-        response = self.llm.messages.create(
-            model=Config.sonnet_model,
-            messages=[{"role": "user", "content": prompt}],
-            temperature=0,
-            max_tokens=1000
-        )
-        return response.content[0].text
 
     def _decompose_complex_query(self, query: str) -> List[str]:
         """Break down complex learning analytics queries"""
@@ -54,9 +36,13 @@ class QueryDecomposer:
         Return sub-queries that help provide a comprehensive analysis."""
         
         try:
-            response = self._call_llm(prompt)
-            # Clean up the response and split into lines
-            sub_queries = [q.strip() for q in response.split('\n') if q.strip() and not q.startswith('[') and not q.startswith(']')]
+            response = self.llm.messages.create(
+                model=Config.sonnet_model,
+                messages=[{"role": "user", "content": prompt}],
+                temperature=0,
+                max_tokens=1000
+            )
+            sub_queries = [q.strip() for q in response.content[0].text.split('\n') if q.strip()]
             return sub_queries if sub_queries else [query]
         except Exception as e:
             print(f"Query decomposition failed: {e}")
@@ -83,8 +69,13 @@ class QueryDecomposer:
         )
 
         try:
-            response = self._call_llm(prompt)
-            selected_table = response.strip()
+            response = self.llm.messages.create(
+                model=Config.sonnet_model,
+                messages=[{"role": "user", "content": prompt}],
+                temperature=0,
+                max_tokens=1000
+            )
+            selected_table = response.content[0].text.strip()
             if selected_table in self.metadata.tables:
                 return selected_table
             return list(self.metadata.tables.keys())[0]
@@ -101,8 +92,7 @@ class QueryDecomposer:
 
     def _extract_entities(self, query: str, table_info) -> List[Dict]:
         """Extract entities using LLM-based entity extraction and fuzzy matching"""
-        # Use the new search function that uses LLM for entity extraction
-        matches = search_financial_terms_without_threshold(query, table_info, self._call_llm)
+        matches = search_financial_terms_without_threshold(query, table_info, self.llm)
         
         return [
             {

@@ -1,15 +1,15 @@
-import sqlite3
 import os
-from anthropic import Anthropic
 from dotenv import load_dotenv
+from anthropic import Anthropic
 from config import Config
 
-def get_test_db_connection():
-    """Get test database connection"""
-    return sqlite3.connect("final_working_database.db")
+# Load environment variables from .env file
+load_dotenv()
 
 def get_test_llm(model_type: str = "haiku", api_key: str = None):
     """Get test LLM client with appropriate model"""
+    if api_key is None:
+        api_key = os.getenv("ANTHROPIC_API_KEY")
     if not api_key:
         raise ValueError("API key is required")
     
@@ -33,11 +33,4 @@ def get_test_llm(model_type: str = "haiku", api_key: str = None):
     wrapped_client.api_key = api_key
     wrapped_client.invoke = lambda prompt: type('Response', (), {'content': wrapped_client(prompt)})()
     
-    return wrapped_client
-
-# Example usage
-if __name__ == "__main__":
-    prompt = "what is the room revenue for ac wailea for the month of dec 2024?"
-    llm_client = get_test_llm()
-    sql_query = llm_client(prompt)
-    print(f"Generated SQL Query: {sql_query}")
+    return wrapped_client 
