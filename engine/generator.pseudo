@@ -1,0 +1,46 @@
+Class SQLGenerator:
+    Initialize:
+        - LLM model instance (using test LLM with "sonnet" model)
+        - Learning Analytics Metadata instance
+
+    Function generate_sql(query_info):
+        /*
+        Purpose: Generate SQL query for learning analytics
+        */
+        1. Create prompt with:
+            - Sub-query from query_info
+            - Table name (student_performance)
+            - Requirements:
+                * Use only valid columns
+                * Focus on learning insights
+                * Use appropriate aggregations
+                * Consider student metrics
+        2. Send prompt to LLM
+        3. Get response with SQL query
+        4. Validate query starts with SELECT
+        5. Return generated SQL query
+        6. On error: Raise ValueError
+
+    Function format_table_schema(table_info):
+        /*
+        Purpose: Format table columns for prompt
+        */
+        1. Create empty schema list
+        2. For each column in table_info:
+            Add formatted string:
+            "- column_name: description"
+        3. Join all entries with newlines
+        4. Return formatted schema string
+
+    Function format_entity_matches(entity_matches, table_info):
+        /*
+        Purpose: Format extracted entities for prompt
+        */
+        1. If no matches:
+            Return "No specific entity matches found"
+        2. For each match:
+            Create formatted string:
+            "- Found 'search_term' in column 'column_name' 
+               matching value 'matched_value'"
+        3. Join all entries with newlines
+        4. Return formatted matches string 

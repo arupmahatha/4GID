@@ -1,0 +1,86 @@
+Class QueryDecomposer:
+    Initialize:
+        - LLM model instance
+        - Matcher (initially None)
+        - Financial terms dictionary
+        - Schema metadata instance
+
+    Function decompose_complex_query(query):
+        /*
+        Purpose: Break down complex queries into specific sub-queries
+        */
+        1. Create prompt for LLM to analyze query complexity
+        2. If query is simple:
+            Return original query as single item list
+        3. If query is complex:
+            - Use LLM to break into focused sub-queries
+            - Extract sub-queries from LLM response
+            - Return list of sub-queries
+        4. On error: Return original query as fallback
+
+    Function select_relevant_table(query):
+        /*
+        Purpose: Select most appropriate table for given query
+        */
+        1. Get table information and relationships
+        2. Create prompt with table schema and relationships
+        3. Ask LLM to select most relevant table
+        4. If selected table exists:
+            Return table name
+        5. Else:
+            Use fuzzy matching as fallback
+            Return best matching table or first available table
+
+    Function initialize_matcher(table_metadata):
+        /*
+        Purpose: Set up matcher with table metadata
+        */
+        1. Clear existing financial terms
+        2. For each column in table metadata:
+            If column has distinct values:
+                Add to financial terms dictionary
+
+    Function extract_entities(query, table_info):
+        /*
+        Purpose: Find and match entities from query to table values
+        */
+        1. Use search functionality to find matches
+        2. Format each match with:
+            - Search term
+            - Column name
+            - Matched value
+            - Match score
+        3. Return formatted matches
+        4. On error: Return empty list
+
+    Function decompose_query(query):
+        /*
+        Main function to process queries
+        */
+        1. Decompose query into sub-queries
+        2. For each sub-query:
+            a. Select relevant table
+            b. Get table information
+            c. Extract entities
+            d. Create result dictionary with:
+                - Sub-query number
+                - Original query
+                - Sub-query text
+                - Table name
+                - Table info
+                - Extracted entities
+                - Query type (direct/decomposed)
+                - Explanation
+        3. Return list of results
+        4. On error: Return error information
+
+    Function find_entities(query):
+        /*
+        Public interface for entity extraction
+        */
+        1. Select relevant table
+        2. Get table information
+        3. Initialize matcher
+        4. Extract entities
+        5. Add table name to each entity
+        6. Return dictionary with extracted entities 

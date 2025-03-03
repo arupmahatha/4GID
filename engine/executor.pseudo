@@ -1,0 +1,54 @@
+Class SQLExecutor:
+    Constants:
+        BLOCKED_OPERATIONS = [
+            'delete', 'drop', 'truncate', 'update', 'insert', 'replace',
+            'alter', 'create', 'rename', 'modify', 'grant', 'revoke'
+        ]
+
+    Initialize:
+        - Database connection instance
+
+    Function is_safe_query(sql_query):
+        /*
+        Purpose: Validate query safety
+        Returns: (is_safe, error_message)
+        */
+        1. Convert query to lowercase
+        2. Check if query starts with SELECT
+            If not: Return (False, "Only SELECT queries allowed")
+        3. For each blocked operation:
+            Check if operation exists as whole word in query
+            If found: Return (False, "Operation not allowed")
+        4. Return (True, "")
+
+    Function execute_query(sql_query):
+        /*
+        Purpose: Execute SQL query safely
+        Returns: (success, results, error_message)
+        */
+        1. Check query safety using is_safe_query
+            If not safe: Return (False, [], error_message)
+        2. Try:
+            a. Create cursor
+            b. Execute query
+            c. Get column names from cursor
+            d. Fetch all results
+            e. Convert results to list of dictionaries:
+                {column_name: value} for each row
+            f. Return (True, results, "")
+        3. On error:
+            Return (False, [], error_message)
+
+    Function validate_query(sql_query):
+        /*
+        Purpose: Validate query without execution
+        Returns: (is_valid, error_message)
+        */
+        1. Check query safety using is_safe_query
+            If not safe: Return (False, error_message)
+        2. Try:
+            a. Create cursor
+            b. Execute EXPLAIN QUERY PLAN
+            c. Return (True, "")
+        3. On error:
+            Return (False, error_message) 

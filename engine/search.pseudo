@@ -1,0 +1,68 @@
+/*
+Purpose: Search and entity extraction functionality for financial terms
+*/
+
+Function extract_entities_from_llm(sub_query, llm):
+    /*
+    Purpose: Extract meaningful entities from query using LLM
+    Returns: List of extracted entities
+    */
+    1. Validate LLM is callable
+        If not: Raise ValueError
+
+    2. Create prompt with:
+        - Instructions for entity extraction
+        - Examples showing:
+            * Utility expenses extraction
+            * Room revenue extraction
+            * Room expense extraction
+            * Food and beverage revenue extraction
+        - Rules:
+            * Combine related terms
+            * Remove stopwords
+            * Exclude dates/time periods
+        - Current query
+
+    3. Try:
+        a. Send prompt to LLM
+        b. Process response:
+            - Split by commas
+            - Strip whitespace and quotes
+            - Remove empty entries
+        c. Return list of entities
+    4. On error:
+        Print error message
+        Return empty list
+
+
+Function search_financial_terms_without_threshold(sub_query, table_info, llm):
+    /*
+    Purpose: Match extracted entities against table values
+    Returns: List of best matches for each entity
+    */
+    1. Validate table_info has columns
+        If not: Return empty list
+
+    2. Extract entities using extract_entities_from_llm
+        If no entities: Return empty list
+
+    3. For each entity:
+        Initialize best_match = None, best_score = 0
+        
+        For each column in table_info:
+            If column has distinct values:
+                For each value in distinct_values:
+                    a. Convert value to string if needed
+                    b. Calculate fuzzy match score using token_sort_ratio
+                    c. If score > best_score:
+                        Update best_score
+                        Create best_match dictionary:
+                            - search_term: entity
+                            - matched_value: value
+                            - column: column_name
+                            - score: score
+        
+        If best_match found:
+            Store in entity_matches dictionary
+
+    4. Return list of all best matches 

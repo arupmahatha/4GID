@@ -1,0 +1,73 @@
+Class SQLAnalyzer:
+    Initialize:
+        - LLM model instance (using test LLM with "haiku" model)
+
+    Function analyze_results(query_info, sub_query_results):
+        /*
+        Purpose: Analyze SQL results and generate insights
+        */
+        1. Try:
+            a. Format results for analysis using format_sub_queries_for_prompt
+            b. Create analysis prompt with:
+                - Original query
+                - Formatted results
+                - Required analysis structure:
+                    * summary
+                    * insights
+                    * trends
+                    * implications
+                    * relationships
+            c. Get analysis from LLM
+            d. Clean and parse response:
+                - Remove markdown
+                - Parse JSON
+                - Validate structure
+                - Ensure all fields are lists
+            e. Return success response with:
+                - Analysis
+                - Sub-query count
+                - Total result count
+                - Query info
+        2. On error:
+            Return error response
+
+    Function format_sub_queries_for_prompt(formatted_results):
+        /*
+        Purpose: Format multiple sub-query results
+        */
+        1. For each result:
+            Create formatted string with:
+            - Sub-query number
+            - Question
+            - SQL query
+            - Results
+        2. Join all entries with newlines
+        3. Return formatted string
+
+    Function format_results_for_prompt(results):
+        /*
+        Purpose: Format individual result set
+        */
+        1. If no results:
+            Return "No results found"
+        2. Take first 10 rows as sample
+        3. Convert each row to string
+        4. Join with newlines
+        5. Return formatted string
+
+
+Class LearningAnalyzer:
+    Function analyze_results(query_info, sub_query_results):
+        /*
+        Purpose: Analyze learning analytics results
+        */
+        1. Create prompt with:
+            - Original query
+            - Required analysis structure:
+                * summary (learning performance)
+                * learning_insights
+                * skill_gaps
+                * recommendations
+                * engagement_analysis
+        2. Send to LLM for analysis
+        3. Return structured analysis 
