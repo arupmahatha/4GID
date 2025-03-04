@@ -1,0 +1,41 @@
+id,name,short_name,degree_code
+1,Computer Science Engineering,CS,1
+2,Electronics Engineering,E,1
+3,Mechanical Engineering,M,1
+4,Civil Engineering,C,1
+5,Electrical Engineering,E,1
+6,Chemical Engineering,C,1
+7,Biotechnology Engineering,B,1
+8,Aerospace Engineering,A,1
+9,Computer Science Engineering,CS,2
+10,Electronics Engineering,E,2
+11,Mechanical Engineering,M,2
+12,Civil Engineering,C,2
+13,Electrical Engineering,E,2
+14,Chemical Engineering,C,2
+15,Biotechnology Engineering,B,2
+16,Aerospace Engineering,A,2
+17,Computer Science Engineering,CS,3
+18,Electronics Engineering,E,3
+19,Mechanical Engineering,M,3
+20,Civil Engineering,C,3
+21,Electrical Engineering,E,3
+22,Chemical Engineering,C,3
+23,Biotechnology Engineering,B,3
+24,Aerospace Engineering,A,3
+25,Computer Science Engineering,CS,4
+26,Electronics Engineering,E,4
+27,Mechanical Engineering,M,4
+28,Civil Engineering,C,4
+29,Electrical Engineering,E,4
+30,Chemical Engineering,C,4
+31,Biotechnology Engineering,B,4
+32,Aerospace Engineering,A,4
+33,Computer Science Engineering,CS,5
+34,Electronics Engineering,E,5
+35,Mechanical Engineering,M,5
+36,Civil Engineering,C,5
+37,Electrical Engineering,E,5
+38,Chemical Engineering,C,5
+39,Biotechnology Engineering,B,5
+40,Aerospace Engineering,A,5

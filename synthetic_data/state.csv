@@ -1,0 +1,31 @@
+id,name,code,country_code
+1,Pennsylvania,ST001,9
+2,California,ST002,8
+3,California,ST003,3
+4,Hawaii,ST004,10
+5,Kansas,ST005,7
+6,South Dakota,ST006,3
+7,Wyoming,ST007,6
+8,Ohio,ST008,10
+9,Ohio,ST009,5
+10,Michigan,ST010,6
+11,Maryland,ST011,7
+12,Massachusetts,ST012,6
+13,Massachusetts,ST013,9
+14,New Jersey,ST014,10
+15,Colorado,ST015,9
+16,Rhode Island,ST016,2
+17,Nebraska,ST017,9
+18,Tennessee,ST018,7
+19,Maryland,ST019,8
+20,Minnesota,ST020,7
+21,Mississippi,ST021,6
+22,Nevada,ST022,3
+23,Iowa,ST023,8
+24,Louisiana,ST024,9
+25,New York,ST025,8
+26,Oklahoma,ST026,1
+27,Utah,ST027,2
+28,California,ST028,2
+29,Kentucky,ST029,2
+30,Utah,ST030,2
