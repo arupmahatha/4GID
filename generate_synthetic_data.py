@@ -5,6 +5,9 @@ import numpy as np
 from datetime import datetime, timedelta
 from faker import Faker
 from schema.metadata import SchemaMetadata, INSTITUTION_TYPE_CHOICES, TYPE_CHOICES, GENDER_CHOICES, MODULE_TYPE_CHOICES
+from sqlalchemy import create_engine, Table, Column, Integer, String, Float, Date, ForeignKey
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.declarative import declarative_base
 
 fake = Faker()
 
@@ -225,5 +228,16 @@ def main():
         df.to_csv(f"{output_dir}/{name}.csv", index=False)
         print(f"Generated {name}.csv with {len(df)} records")
 
+    # Convert CSV to SQL database
+    database_url = 'sqlite:///synthetic_data.db'
+    engine = create_engine(database_url)
+    Base = declarative_base()
+
+    for name, df in dataframes.items():
+        # Keep the table name in the database the same as the CSV file name
+        table_name = name
+        df.to_sql(table_name, engine, if_exists='replace', index=False)
+        print(f"Converted {name}.csv to {table_name} table in the database")
+
 if __name__ == "__main__":
-    main() 
+    main()

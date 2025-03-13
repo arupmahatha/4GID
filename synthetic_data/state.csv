@@ -1,31 +1,31 @@
 id,name,code,country_code
-1,Pennsylvania,ST001,9
-2,California,ST002,8
-3,California,ST003,3
-4,Hawaii,ST004,10
-5,Kansas,ST005,7
-6,South Dakota,ST006,3
-7,Wyoming,ST007,6
-8,Ohio,ST008,10
-9,Ohio,ST009,5
-10,Michigan,ST010,6
-11,Maryland,ST011,7
-12,Massachusetts,ST012,6
-13,Massachusetts,ST013,9
-14,New Jersey,ST014,10
-15,Colorado,ST015,9
-16,Rhode Island,ST016,2
-17,Nebraska,ST017,9
-18,Tennessee,ST018,7
-19,Maryland,ST019,8
-20,Minnesota,ST020,7
-21,Mississippi,ST021,6
-22,Nevada,ST022,3
-23,Iowa,ST023,8
-24,Louisiana,ST024,9
-25,New York,ST025,8
-26,Oklahoma,ST026,1
-27,Utah,ST027,2
-28,California,ST028,2
-29,Kentucky,ST029,2
-30,Utah,ST030,2
+1,Arkansas,ST001,9
+2,Ohio,ST002,10
+3,Alaska,ST003,3
+4,North Dakota,ST004,7
+5,Tennessee,ST005,4
+6,Utah,ST006,5
+7,Florida,ST007,9
+8,Texas,ST008,5
+9,North Carolina,ST009,8
+10,Montana,ST010,3
+11,Wyoming,ST011,8
+12,Iowa,ST012,9
+13,Illinois,ST013,10
+14,Indiana,ST014,4
+15,Maryland,ST015,9
+16,Arkansas,ST016,5
+17,North Carolina,ST017,5
+18,Indiana,ST018,2
+19,Utah,ST019,3
+20,Nevada,ST020,8
+21,Delaware,ST021,4
+22,South Dakota,ST022,1
+23,Washington,ST023,1
+24,Missouri,ST024,10
+25,Louisiana,ST025,2
+26,Massachusetts,ST026,8
+27,Iowa,ST027,1
+28,Connecticut,ST028,1
+29,Idaho,ST029,6
+30,Florida,ST030,10

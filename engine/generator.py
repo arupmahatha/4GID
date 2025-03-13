@@ -6,8 +6,8 @@ from .llm_call import get_test_llm
 
 class SQLGenerator:
     def __init__(self):
-        # Initialize the LLM directly without loading environment variables
-        self.llm = get_test_llm("sonnet")  # LLM is now initialized here
+        # Initialize the LLM directly with GPT-Neo
+        self.llm = get_test_llm("gpt-neo")  # Updated to use GPT-Neo
         self.metadata = LearningAnalyticsMetadata()
 
     def generate_sql(self, query_info: Dict) -> str:
