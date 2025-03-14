@@ -22,11 +22,6 @@ class Relationship:
     type: str  # OneToOne, OneToMany, ManyToMany
     description: str
 
-@dataclass
-class TableStructure:
-    name: str
-    columns: List[Column]
-
 # Create your choices here
 TYPE_CHOICES = [('academic', 'academic'), ('corporate', 'corporate'), ('government', 'government')]
 GENDER_CHOICES = [('M', 'male'), ('F', 'female'), ('O', 'other')]

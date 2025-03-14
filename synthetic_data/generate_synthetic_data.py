@@ -1,3 +1,10 @@
+import os
+import sys
+
+# Add the project root directory to Python path
+project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(project_root)
+
 import random
 import string
 import pandas as pd
@@ -183,6 +190,85 @@ def generate_learner_education_data(n=1500, learner_df=None, institution_df=None
         })
     return pd.DataFrame(educations)
 
+def generate_specialization_data(n=10, knowledge_partner_df=None):
+    specializations = []
+    for i in range(1, n+1):
+        specializations.append({
+            'id': i,
+            'name': f"Specialization {i}",
+            'info': fake.text(max_nb_chars=200),
+            'knowledge_partner_code': random.choice(knowledge_partner_df['id'].tolist())
+        })
+    return pd.DataFrame(specializations)
+
+def generate_specialization_course_data(n=10, course_df=None, specialization_df=None):
+    specialization_courses = []
+    for i in range(1, n+1):
+        specialization_courses.append({
+            'id': i,
+            'course_sequence_number': i,
+            'course_code': random.choice(course_df['id'].tolist()),
+            'specialization_code': random.choice(specialization_df['id'].tolist())
+        })
+    return pd.DataFrame(specialization_courses)
+
+def generate_program_data(n=10, knowledge_partner_df=None):
+    programs = []
+    for i in range(1, n+1):
+        programs.append({
+            'id': i,
+            'name': f"Program {i}",
+            'info': fake.text(max_nb_chars=200),
+            'knowledge_partner_code': random.choice(knowledge_partner_df['id'].tolist())
+        })
+    return pd.DataFrame(programs)
+
+def generate_program_specialization_data(n=10, program_df=None, specialization_df=None):
+    program_specializations = []
+    for i in range(1, n+1):
+        program_specializations.append({
+            'id': i,
+            'program_code': random.choice(program_df['id'].tolist()),
+            'specialization_code': random.choice(specialization_df['id'].tolist())
+        })
+    return pd.DataFrame(program_specializations)
+
+def generate_program_requirement_data(n=10, program_df=None):
+    program_requirements = []
+    for i in range(1, n+1):
+        program_requirements.append({
+            'id': i,
+            'name': f"Requirement {i}",
+            'is_mandatory': random.choice([True, False]),
+            'program_code': random.choice(program_df['id'].tolist())
+        })
+    return pd.DataFrame(program_requirements)
+
+def generate_learner_employment_data(n=100, learner_df=None, institution_df=None, department_df=None, designation_df=None):
+    employments = []
+    for i in range(1, n+1):
+        employments.append({
+            'id': i,
+            'empid': fake.random_number(digits=5),
+            'year_of_joining': random.randint(2015, 2022),
+            'learner_code': random.choice(learner_df['id'].tolist()),
+            'institution_code': random.choice(institution_df['id'].tolist()),
+            'department_code': random.choice(department_df['id'].tolist()),
+            'designation_code': random.choice(designation_df['id'].tolist())
+        })
+    return pd.DataFrame(employments)
+
+def generate_learner_program_requirement_data(n=100, learner_df=None, program_requirement_df=None):
+    learner_requirements = []
+    for i in range(1, n+1):
+        learner_requirements.append({
+            'id': i,
+            'learner_code': random.choice(learner_df['id'].tolist()),
+            'program_requirement_code': random.choice(program_requirement_df['id'].tolist()),
+            'value': fake.text(max_nb_chars=50)
+        })
+    return pd.DataFrame(learner_requirements)
+
 def main():
     # Generate all datasets
     country_df = generate_country_data()
@@ -202,26 +288,39 @@ def main():
         institution_df=institution_df,
         branch_df=branch_df
     )
+    specialization_df = generate_specialization_data(10, knowledge_partner_df)
+    specialization_course_df = generate_specialization_course_data(10, course_df, specialization_df)
+    program_df = generate_program_data(10, knowledge_partner_df)
+    program_specialization_df = generate_program_specialization_data(10, program_df, specialization_df)
+    program_requirement_df = generate_program_requirement_data(10, program_df)
+    learner_employment_df = generate_learner_employment_data(100, learner_df, institution_df, department_df, designation_df)
+    learner_program_requirement_df = generate_learner_program_requirement_data(100, learner_df, program_requirement_df)
 
     # Save all dataframes to CSV files
     output_dir = 'synthetic_data'
-    import os
     os.makedirs(output_dir, exist_ok=True)
     
     dataframes = {
-        'country': country_df,
-        'state': state_df,
-        'district': district_df,
-        'institution': institution_df,
-        'degree': degree_df,
-        'branch': branch_df,
-        'department': department_df,
-        'designation': designation_df,
-        'knowledge_partner': knowledge_partner_df,
-        'course': course_df,
-        'module': module_df,
-        'learner': learner_df,
-        'learner_education': learner_education_df
+        'Country': country_df,
+        'State': state_df,
+        'District': district_df,
+        'Institution': institution_df,
+        'Degree': degree_df,
+        'Branch': branch_df,
+        'Department': department_df,
+        'Designation': designation_df,
+        'Knowledge_Partner': knowledge_partner_df,
+        'Course': course_df,
+        'Module': module_df,
+        'Learner': learner_df,
+        'Learner_Education': learner_education_df,
+        'Specialization': specialization_df,
+        'Specialization_Course': specialization_course_df,
+        'Program': program_df,
+        'Program_Specialization': program_specialization_df,
+        'Program_Requirement': program_requirement_df,
+        'Learner_Employment': learner_employment_df,
+        'Learner_Program_Requirement': learner_program_requirement_df
     }
 
     for name, df in dataframes.items():
@@ -229,7 +328,7 @@ def main():
         print(f"Generated {name}.csv with {len(df)} records")
 
     # Convert CSV to SQL database
-    database_url = 'sqlite:///synthetic_data.db'
+    database_url = 'sqlite:///our_database.db'
     engine = create_engine(database_url)
     Base = declarative_base()
 

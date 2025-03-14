@@ -169,6 +169,3 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
-
-# Ignore the gpt_neo_model directory
-gpt_neo_model/

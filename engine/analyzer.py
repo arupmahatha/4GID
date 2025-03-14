@@ -1,5 +1,12 @@
+import os
+import sys
+
+# Add the project root directory to Python path
+project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(project_root)
+
 from typing import Dict, List
-from .llm_call import get_test_llm
+from ..llm_config.llm_call import get_test_llm
 
 class SQLAnalyzer:
     def __init__(self):

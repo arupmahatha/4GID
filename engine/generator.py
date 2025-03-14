@@ -2,7 +2,7 @@ from typing import Dict, List
 from config import Config
 from ...metadata import LearningAnalyticsMetadata
 import os
-from .llm_call import get_test_llm
+from ..llm_config.llm_call import get_test_llm
 
 class SQLGenerator:
     def __init__(self):

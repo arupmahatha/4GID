@@ -1,186 +1,118 @@
-from typing import List, Dict
-from metadata import SchemaMetadata
-from fuzzywuzzy import fuzz
-from utils.search import search_financial_terms_without_threshold
+import os
+import sys
+
+# Add the project root directory to Python path
+project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(project_root)
+
+from llm_config.llm_call import generate_text  # Import the generate_text function
+from schema.metadata import SchemaMetadata
+from utils.search import search_terms
 
 class QueryDecomposer:
-    def __init__(self, llm):
-        self.llm = llm
-        self.matcher = None
-        self.financial_terms = {}
-        self.metadata = SchemaMetadata()
+    def __init__(self):
+        self.metadata = SchemaMetadata()  # Load schema metadata
 
-    def _decompose_complex_query(self, query: str) -> List[str]:
-        """Break down complex queries into specific, focused sub-queries"""
-        prompt = f"""Determine if the given query requires decomposition or if it is simple enough to be returned as is. If the query is simple, return it directly. If decomposition is needed, break it down into specific, focused sub-queries that together help answer the main question.
+    def decompose_complex_query(self, query):
+        """
+        Break down complex queries into specific sub-queries.
+        """
+        prompt = (
+            f"Given the following query: {query}\n"
+            "Provide the relevant sub-queries based on the examples below:\n"
+            "1) Find all institutions in California offering computer science degrees\n"
+            "   returned: ['Find all institutions in California offering computer science degrees']\n"
+            "2) Compare the number of students in California pursuing computer science and biotechnology degrees\n"
+            "   returned: ['Find number of students in California pursuing computer science degrees', 'Find number of students in California pursuing biotechnology degrees']\n"
+            "Please return the relevant sub-queries as a list."
+        )
+        response = generate_text(prompt)  # Use generate_text instead of self.llm(prompt)
+        
+        # Extract sub-queries from the LLM response
+        sub_queries = self.extract_sub_queries(response)
+        return sub_queries
 
-        Examples:
-        1. Input: "What is the performance of students in programming courses?"
-           Output: "What is the performance of students in programming courses?"
+    def extract_sub_queries(self, response):
+        # Logic to extract sub-queries from the LLM response
+        return response.split(",")  # Example: split by commas
 
-        2. Input: "How do students from different institutions perform in programming courses, and what's their employment status after graduation?"
-           Output: [
-               "What is the performance of students in programming courses across different institutions?",
-               "What is the employment status of students after graduation from these institutions?"
-           ]
+    def select_relevant_table(self, query):
+        """
+        Select the most appropriate table for a given query.
+        """
+        prompt = (
+            f"Select the most appropriate table for the query: {query}\n"
+            "Example query: 'Find all institutions in California.'\n"
+            "Available tables: " + ", ".join(self.metadata.tables.keys()) + "\n"
+            "Please return the most relevant table."
+        )
+        response = generate_text(prompt)  # Use generate_text instead of self.llm(prompt)
+        return response.strip()  # Return the selected table name
 
-        Current Query: {query}
+    def extract_entities(self, query):
+        """
+        Extract entities from the query.
+        """
+        prompt = (
+            f"Extract entities from the following query: {query}\n"
+            "Example: 'Find all institutions in California offering computer science degrees.'\n"
+            "Expected entities: ['California', 'computer science']\n"
+            "Please return a list of entities."
+        )
+        response = generate_text(prompt)  # Use generate_text instead of self.llm(prompt)
+        return self.parse_entities(response)  # Placeholder for parsing logic
 
-        If the query is simple enough, return it as is. If decomposition is needed, return a list of focused sub-queries that together help answer the main question. Each sub-query should be self-contained and focused on a specific aspect."""
+    def parse_entities(self, response):
+        # Logic to parse entities from the LLM response
+        return response.split(",")  # Example: split by commas
 
-        try:
-            response = self.llm.invoke(prompt).content
-            # Extract sub-queries from the response
-            sub_queries = []
-            for line in response.split('\n'):
-                line = line.strip()
-                if line and not line.startswith(('[', ']')) and '"' in line:
-                    # Extract the query from between quotes
-                    query_text = line.split('"')[1]
-                    sub_queries.append(query_text)
+    def match_entities(self, entity, table_name):
+        """
+        Find and map the entity to the table_name.
+        """
+        match = search_terms(entity, table_name)
+        return match if match else []  # Return empty list on error
+
+    def main_decomposer(self, query):
+        """
+        Main function to process the entire decomposer pipeline.
+        """
+        # First, check if decomposition is needed
+        sub_queries = self.decompose_complex_query(query)
+        
+        results = []
+        if len(sub_queries) == 1 and sub_queries[0] == query:
+            # No decomposition needed, return original query
+            table_name = self.select_relevant_table(query)
+            entities = self.extract_entities(query)
+            matches = [self.match_entities(entity, table_name) for entity in entities]
             
-            # If no sub-queries were extracted or something went wrong, return original query
-            return sub_queries if sub_queries else [query]
-            
-        except Exception as e:
-            print(f"Query decomposition failed: {e}")
-            return [query]
-
-    def _select_relevant_table(self, query: str) -> str:
-        """Select the most relevant table based on query content using LLM"""
-        # Prepare table information for the prompt
-        tables_info = []
-        for table_name in self.metadata.tables:
-            relationships = self.metadata.get_relationships_for_table(table_name)
-            
-            table_info = (
-                f"Table: {table_name}\n"
-                f"Relationships: {', '.join(f'{rel.from_table}->{rel.to_table} ({rel.type})' for rel in relationships)}\n"
-            )
-            tables_info.append(table_info)
-
-        prompt = f"""Given this query and the available tables, select the most appropriate table name.
-        Consider the table's relationships. Return ONLY the exact table name, nothing else.
-
-        Query: {query}
-
-        Available Tables:
-        {'\n'.join(tables_info)}
-
-        Return only the table name that best matches the query requirements."""
-
-        try:
-            response = self.llm.invoke(prompt).content
-            selected_table = response.strip()
-            
-            # Validate the selected table exists
-            if selected_table in self.metadata.tables:
-                return selected_table
-                
-            # Fallback to fuzzy matching if LLM returns invalid table
-            best_match = None
-            best_score = 0
-            for table_name in self.metadata.tables:
-                score = fuzz.ratio(selected_table.lower(), table_name.lower())
-                if score > best_score:
-                    best_score = score
-                    best_match = table_name
-            
-            return best_match if best_match else list(self.metadata.tables.keys())[0]
-            
-        except Exception as e:
-            print(f"Table selection failed: {e}")
-            return list(self.metadata.tables.keys())[0]
-
-    def _initialize_matcher(self, table_metadata):
-        """Initialize the matcher with table metadata"""
-        self.financial_terms = {}
-        for column_name, column_info in table_metadata.columns.items():
-            if column_info.distinct_values:
-                self.financial_terms[column_name] = column_info.distinct_values
-
-    def _extract_entities(self, query: str, table_info: Dict) -> List[Dict]:
-        """Extract entities from the query and match them with table values"""
-        try:
-            # Use the search functionality to find matches
-            matches = search_financial_terms_without_threshold(query, table_info, self.llm)
-            
-            # Format the matches
-            formatted_matches = []
-            for match in matches:
-                formatted_match = {
-                    "search_term": match["search_term"],
-                    "column": match["column"],
-                    "matched_value": match["matched_value"],
-                    "score": match["score"]
-                }
-                formatted_matches.append(formatted_match)
-            
-            return formatted_matches
-            
-        except Exception as e:
-            print(f"Entity extraction failed: {e}")
-            return []
-
-    def decompose_query(self, query: str) -> List[Dict]:
-        """Main method to process and decompose queries"""
-        try:
-            # Step 1: Decompose complex query into sub-queries
-            sub_queries = self._decompose_complex_query(query)
-            
-            results = []
-            for idx, sub_query in enumerate(sub_queries, 1):
-                try:
-                    # Step 2: Select relevant table for each sub-query
-                    table_name = self._select_relevant_table(sub_query)
-                    
-                    # Step 3: Get table info and extract entities
-                    table_info = self.metadata.get_table_info(table_name)
-                    extracted_entities = self._extract_entities(sub_query, table_info)
-                    
-                    # Create result for this sub-query
-                    result = {
-                        "sub_query_number": idx,
-                        "original_query": query,
-                        "sub_query": sub_query,
-                        "table": table_name,
-                        "table_info": table_info,
-                        "extracted_entities": extracted_entities,
-                        "type": "direct" if len(sub_queries) == 1 else "decomposed",
-                        "explanation": f"Query processed using {table_name} table"
-                    }
-                    results.append(result)
-                    
-                except Exception as e:
-                    # Handle individual sub-query failures
-                    results.append({
-                        "sub_query_number": idx,
-                        "original_query": query,
-                        "sub_query": sub_query,
-                        "error": str(e),
-                        "type": "failed"
-                    })
-            
-            return results
-            
-        except Exception as e:
-            print(f"Query decomposition failed: {e}")
-            return [{
-                "sub_query_number": 1,
-                "original_query": query,
+            result = {
+                "query_type": "direct",
                 "sub_query": query,
-                "error": str(e),
-                "type": "failed"
-            }]
-
-    def find_entities(self, query: str) -> Dict[str, List[Dict]]:
-        """Public method to find entities in a query"""
-        table_name = self._select_relevant_table(query)
-        table_info = self.metadata.get_table_info(table_name)
-        self._initialize_matcher(table_info)
-        extracted_entities = self._extract_entities(query, table_info)
-        for entity in extracted_entities:
-            entity["table"] = table_name
-        return {
-            "extracted_entities": extracted_entities,
-        }
+                "table_selected": table_name,
+                "entities": entities,
+                "matching_results": matches
+            }
+            results.append(result)
+        else:
+            # Decomposition is needed
+            for sub_query in sub_queries:
+                table_name = self.select_relevant_table(sub_query)
+                entities = self.extract_entities(sub_query)
+                matches = []
+                
+                for entity in entities:
+                    match = self.match_entities(entity, table_name)
+                    matches.append(match)
+                
+                result = {
+                    "query_type": "decomposed",
+                    "sub_query": sub_query,
+                    "table_selected": table_name,
+                    "entities": entities,
+                    "matching_results": matches
+                }
+                results.append(result)
+        
+        return results
