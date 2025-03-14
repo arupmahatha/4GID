@@ -8,7 +8,7 @@ def search_terms(term: str, table_name: str) -> Dict:
     Returns the best match for the term.
     """
     # Connect to the database
-    conn = sqlite3.connect('our_database.db')
+    conn = sqlite3.connect('/Users/arup/Documents/4GID/our_database.db')
     cursor = conn.cursor()
 
     # 1. Validate table_name exists and has columns

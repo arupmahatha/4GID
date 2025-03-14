@@ -1,7 +1,4 @@
-from llm_call import generate_text, reset_conversation  # Import the functions
-
-# Reset conversation if starting fresh
-reset_conversation()
+from llm_call import generate_text  # Import the functions
 
 # Define a prompt to test
 prompt1 = "Tell me a joke."

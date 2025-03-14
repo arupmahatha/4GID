@@ -6,8 +6,8 @@ from search import search_terms
 class TestSearch(unittest.TestCase):
 
     def test_search_terms(self):
-        table_name = "institution"  # Name of the table to search
-        term = 'Mclaughlin, Jackson and White Institution' # Define the test term
+        table_name = "Institution"  # Name of the table to search
+        term = 'Mclaughlin, Jackson and White' # Define the test term
         
         # Call the search function
         match = search_terms(term, table_name)

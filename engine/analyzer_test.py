@@ -1,59 +1,27 @@
 from analyzer import SQLAnalyzer
 
-def test_analyzer():
+def main():
     """Test SQLAnalyzer functionality"""
-    analyzer = SQLAnalyzer()  # No need to pass API key
+    analyzer = SQLAnalyzer()
 
-    # Test data
-    test_query_info = {
-        'original_query': "what is the room revenue for ac wailea for the month of dec 2024?"
-    }
+    # Test query for educational program effectiveness
+    test_query = "Evaluate the effectiveness of educational programs based on multiple metrics."
     
-    test_results = [{
-        'sub_query': "what is the room revenue for ac wailea for the month of dec 2024?",
-        'sql_query': "SELECT SQL_Property, Revenue FROM final_income_sheet_new_seq WHERE SQL_Property = 'AC Wailea' AND Date = '2024-12'",
-        'results': [
-            {'SQL_Property': 'AC Wailea', 'Revenue': 150000, 'Date': '2024-12-01'},
-            {'SQL_Property': 'AC Wailea', 'Revenue': 160000, 'Date': '2024-12-02'}
-        ]
-    }]
+    # Test data - educational program metrics
+    test_results = [{'program_name': 'Program 10', 'num_specializations': 3, 'num_courses': 5, 'enrolled_learners': 16, 'avg_years_to_complete': 4.0, 'enrollment_percentage': 16.16}, {'program_name': 'Program 1', 'num_specializations': 2, 'num_courses': 1, 'enrolled_learners': 15, 'avg_years_to_complete': 4.0, 'enrollment_percentage': 15.15}, {'program_name': 'Program 6', 'num_specializations': 2, 'num_courses': 0, 'enrolled_learners': 12, 'avg_years_to_complete': 4.0, 'enrollment_percentage': 12.12}, {'program_name': 'Program 8', 'num_specializations': 0, 'num_courses': 0, 'enrolled_learners': 10, 'avg_years_to_complete': 4.0, 'enrollment_percentage': 10.1}, {'program_name': 'Program 4', 'num_specializations': 1, 'num_courses': 2, 'enrolled_learners': 9, 'avg_years_to_complete': 4.0, 'enrollment_percentage': 9.09}, {'program_name': 'Program 5', 'num_specializations': 0, 'num_courses': 0, 'enrolled_learners': 9, 'avg_years_to_complete': 4.0, 'enrollment_percentage': 9.09}, {'program_name': 'Program 3', 'num_specializations': 0, 'num_courses': 0, 'enrolled_learners': 8, 'avg_years_to_complete': 4.0, 'enrollment_percentage': 8.08}, {'program_name': 'Program 9', 'num_specializations': 0, 'num_courses': 0, 'enrolled_learners': 8, 'avg_years_to_complete': 4.0, 'enrollment_percentage': 8.08}, {'program_name': 'Program 2', 'num_specializations': 0, 'num_courses': 0, 'enrolled_learners': 7, 'avg_years_to_complete': 4.0, 'enrollment_percentage': 7.07}, {'program_name': 'Program 7', 'num_specializations': 1, 'num_courses': 0, 'enrolled_learners': 5, 'avg_years_to_complete': 4.0, 'enrollment_percentage': 5.05}]
     
-    print("\n=== Testing SQLAnalyzer ===")
-    print(f"Original Query: {test_query_info['original_query']}")
+    # Test analysis
+    analysis_results = analyzer.main_analyzer(test_query, test_results)
     
-    # Test results formatting
-    print("\n1. Testing Results Formatting:")
-    formatted_results = analyzer._format_results_for_prompt(test_results[0]['results'])
-    print("Formatted Results:")
-    print(formatted_results)
-    
-    # Test sub-queries formatting
-    print("\n2. Testing Sub-queries Formatting:")
-    formatted_sub_queries = analyzer._format_sub_queries_for_prompt([{
-        'sub_query': test_results[0]['sub_query'],
-        'sql_query': test_results[0]['sql_query'],
-        'results': formatted_results
-    }])
-    print("Formatted Sub-queries:")
-    print(formatted_sub_queries)
-    
-    # Test full analysis
-    print("\n3. Testing Full Analysis:")
-    analysis_results = analyzer.analyze_results(test_query_info, test_results)
     print("\nAnalysis Results:")
     if analysis_results['success']:
-        analysis = analysis_results['analysis']
+        print(f"Query: {analysis_results['query_info']}")
+        print(f"Record count: {analysis_results['record_count']}")
         print(f"\nSuccess: {analysis_results['success']}")
-        print(f"Sub-query count: {analysis_results['sub_query_count']}")
-        print(f"Total result count: {analysis_results['total_result_count']}")
         print("\nAnalysis:")
-        print(f"Summary: {analysis.get('summary', 'N/A')}")
-        print(f"Insights: {analysis.get('insights', 'N/A')}")
-        print(f"Trends: {analysis.get('trends', 'N/A')}")
-        print(f"Implications: {analysis.get('implications', 'N/A')}")
-        print(f"Relationships: {analysis.get('relationships', 'N/A')}")
+        print(analysis_results['analysis'])
     else:
-        print(f"Analysis failed: {analysis_results.get('error', 'Unknown error')}")
+        print(f"Analysis failed: {analysis_results['error']}")
 
 if __name__ == "__main__":
-    test_analyzer() 
+    main() 

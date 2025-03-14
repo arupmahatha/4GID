@@ -1,73 +1,33 @@
 Class SQLAnalyzer:
     Initialize:
-        - LLM model instance (using test LLM with "haiku" model)
+        - Import llm_call module
 
-    Function analyze_results(query_info, sub_query_results):
+    Function main_analyzer(query_info, query_results):
         /*
-        Purpose: Analyze SQL results and generate insights
+        Purpose: Analyze SQL query results and generate comprehensive insights
+        Parameters:
+            - query_info: Original query information
+            - query_results: List of dictionaries containing query results
         */
         1. Try:
-            a. Format results for analysis using format_sub_queries_for_prompt
-            b. Create analysis prompt with:
-                - Original query
-                - Formatted results
-                - Required analysis structure:
-                    * summary
-                    * insights
-                    * trends
-                    * implications
-                    * relationships
-            c. Get analysis from LLM
-            d. Clean and parse response:
-                - Remove markdown
-                - Parse JSON
-                - Validate structure
-                - Ensure all fields are lists
-            e. Return success response with:
-                - Analysis
-                - Sub-query count
-                - Total result count
-                - Query info
+            a. Create analysis prompt:
+                """
+                Analyze the following data based on the query:
+                "{query_info}"
+
+                Data (list of records):
+                {query_results}
+
+                Provide a comprehensive analysis including:
+                1. Key findings and patterns
+                2. Notable relationships between metrics
+                3. Important trends or anomalies
+                4. Actionable insights and recommendations
+                """
+            b. Get analysis from llm_call.generate_text with prompt
+            c. Return:
+                - Original query info
+                - Number of records (len(query_results))
+                - Analysis response from LLM
         2. On error:
-            Return error response
-
-    Function format_sub_queries_for_prompt(formatted_results):
-        /*
-        Purpose: Format multiple sub-query results
-        */
-        1. For each result:
-            Create formatted string with:
-            - Sub-query number
-            - Question
-            - SQL query
-            - Results
-        2. Join all entries with newlines
-        3. Return formatted string
-
-    Function format_results_for_prompt(results):
-        /*
-        Purpose: Format individual result set
-        */
-        1. If no results:
-            Return "No results found"
-        2. Take first 10 rows as sample
-        3. Convert each row to string
-        4. Join with newlines
-        5. Return formatted string
-
-
-Class LearningAnalyzer:
-    Function analyze_results(query_info, sub_query_results):
-        /*
-        Purpose: Analyze learning analytics results
-        */
-        1. Create prompt with:
-            - Original query
-            - Required analysis structure:
-                * summary (learning performance)
-                * learning_insights
-                * skill_gaps
-                * recommendations
-                * engagement_analysis
-        2. Send to LLM for analysis
-        3. Return structured analysis 
+            Return error response with details 

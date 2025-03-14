@@ -1,55 +1,50 @@
-import os
-import sys
-project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.append(project_root)
+from executor import SQLExecutor
 
-from engine.executor import SQLExecutor
-from test_engine import get_test_db_connection
-
-def test_executor():
+def main():
     """Test SQLExecutor functionality"""
-    # Initialize
-    connection = get_test_db_connection()
-    executor = SQLExecutor(connection)
+    executor = SQLExecutor()
+
+    test_query = """
+        WITH ProgramMetrics AS (
+            SELECT 
+                p.id as program_id,
+                p.name as program_name,
+                COUNT(DISTINCT ps.specialization_code) as num_specializations,
+                COUNT(DISTINCT sc.course_code) as num_courses,
+                COUNT(DISTINCT lpr.learner_code) as enrolled_learners,
+                ROUND(AVG(CAST(le.year_of_graduation - le.year_of_joining AS FLOAT)), 1) as avg_completion_time
+            FROM Program p
+            LEFT JOIN Program_Specialization ps ON p.id = ps.program_code
+            LEFT JOIN Specialization_Course sc ON ps.specialization_code = sc.specialization_code
+            LEFT JOIN Learner_Program_Requirement lpr ON p.id = lpr.program_requirement_code
+            LEFT JOIN Learner_Education le ON lpr.learner_code = le.learner_code
+            GROUP BY p.id, p.name
+        )
+        SELECT 
+            program_name,
+            num_specializations,
+            num_courses,
+            enrolled_learners,
+            avg_completion_time as avg_years_to_complete,
+            ROUND(100.0 * enrolled_learners / NULLIF(SUM(enrolled_learners) OVER (), 0), 2) as enrollment_percentage
+        FROM ProgramMetrics
+        WHERE enrolled_learners > 0
+        ORDER BY enrolled_learners DESC;
+        """
+    # test_query = "DELETE FROM Institution WHERE id = 1;"
+
+    print(f"Executing Query:\n{test_query}")
     
-    # Test queries
-    test_queries = [
-        "SELECT SUM(Current_Actual_Month) AS room_sold FROM final_income_sheet_new_seq WHERE SQL_Property = 'Steward Santa Barbara' AND SQL_Account_Category_Order = 'Rooms Sold' AND Month = '2023-11-01'",
-        "SELECT * FROM final_income_sheet_new_seq LIMIT 5",
-        "DELETE FROM final_income_sheet_new_seq",  # Should be blocked
-        "SELECT * FROM final_income_sheet_new_seq; DROP TABLE users",  # Should be blocked
-    ]
+    success, results, formatted_results, error = executor.main_executor(test_query)
     
-    print("\n=== Testing SQLExecutor ===")
-    
-    for query in test_queries:
-        print(f"\nTesting Query: {query}")
-        
-        # Test query safety check
-        print("\n1. Testing Safety Check:")
-        is_safe, error_msg = executor._is_safe_query(query)
-        print(f"Is Safe: {is_safe}")
-        if error_msg:
-            print(f"Error Message: {error_msg}")
-        
-        # Test query validation
-        print("\n2. Testing Query Validation:")
-        is_valid, validation_error = executor.validate_query(query)
-        print(f"Is Valid: {is_valid}")
-        if validation_error:
-            print(f"Validation Error: {validation_error}")
-        
-        # Test query execution
-        print("\n3. Testing Query Execution:")
-        success, results, error = executor.execute_query(query)
-        print(f"Success: {success}")
-        if error:
-            print(f"Error: {error}")
-        else:
-            print(f"Results: {len(results)} rows returned")
-            if results:
-                print("First row sample:")
-                print(results[0])
+    if success:
+        print(f"\nSuccess! Found {len(results)} rows")
+        print("\nFormatted Results:")
+        print(formatted_results)
+        print("\nRaw Results:")
+        print(results)
+    else:
+        print(f"\nFailed: {error}")
 
 if __name__ == "__main__":
-    test_executor() 
+    main() 

@@ -42,9 +42,8 @@ class QueryDecomposer:
         """
         prompt = (
             f"Select the most appropriate table for the query: {query}\n"
-            "Example query: 'Find all institutions in California.'\n"
             "Available tables: " + ", ".join(self.metadata.tables.keys()) + "\n"
-            "Please return the most relevant table."
+            "Please return only the name of the single most relevant table and nothing else."
         )
         response = generate_text(prompt)  # Use generate_text instead of self.llm(prompt)
         return response.strip()  # Return the selected table name
@@ -70,6 +69,8 @@ class QueryDecomposer:
         """
         Find and map the entity to the table_name.
         """
+        # Ensure the table name is properly quoted to prevent SQL syntax errors
+        table_name = f'"{table_name}"'  # Quote the table name
         match = search_terms(entity, table_name)
         return match if match else []  # Return empty list on error
 

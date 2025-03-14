@@ -1,54 +1,59 @@
 Class SQLExecutor:
     Constants:
-        BLOCKED_OPERATIONS = [
-            'delete', 'drop', 'truncate', 'update', 'insert', 'replace',
-            'alter', 'create', 'rename', 'modify', 'grant', 'revoke'
-        ]
+        # List of dangerous SQL operations to block
+        BLOCKED_OPERATIONS = {'delete', 'drop', 'truncate', 'update', 'insert', 'replace', 'alter', 'create', 'rename', 'modify', 'grant', 'revoke'}
+        
+        # List of allowed query starting terms
+        ALLOWED_STARTS = {'select', 'with'}
+        
+        DATABASE_PATH = "/Users/arup/Documents/4GID/our_database.db"
 
-    Initialize:
-        - Database connection instance
-
-    Function is_safe_query(sql_query):
+    Function _is_safe_query(sql_query):
         /*
-        Purpose: Validate query safety
+        Purpose: Check if query is safe to execute
         Returns: (is_safe, error_message)
         */
-        1. Convert query to lowercase
-        2. Check if query starts with SELECT
-            If not: Return (False, "Only SELECT queries allowed")
+        1. Convert query to lowercase and strip whitespace
+        2. Check if query starts with any allowed term
+            If not: Return (False, "Query must start with one of: {allowed terms}")
         3. For each blocked operation:
             Check if operation exists as whole word in query
             If found: Return (False, "Operation not allowed")
         4. Return (True, "")
 
-    Function execute_query(sql_query):
+    Function format_results_for_analysis(results):
         /*
-        Purpose: Execute SQL query safely
-        Returns: (success, results, error_message)
+        Purpose: Format query results into clear, tabular text for LLM analysis
         */
-        1. Check query safety using is_safe_query
-            If not safe: Return (False, [], error_message)
-        2. Try:
-            a. Create cursor
-            b. Execute query
-            c. Get column names from cursor
-            d. Fetch all results
-            e. Convert results to list of dictionaries:
-                {column_name: value} for each row
-            f. Return (True, results, "")
-        3. On error:
-            Return (False, [], error_message)
+        1. If no results:
+            Return "No results found"
+        2. Get column names from first result
+        3. Create formatted table header with column names
+        4. For each row:
+            Format values in aligned columns
+        5. Return formatted table string
 
-    Function validate_query(sql_query):
+    Function main_executor(sql_query):
         /*
-        Purpose: Validate query without execution
-        Returns: (is_valid, error_message)
+        Purpose: Execute SQL query safely and return formatted results
+        Returns: (success, results, formatted_results, error_message)
         */
-        1. Check query safety using is_safe_query
-            If not safe: Return (False, error_message)
-        2. Try:
-            a. Create cursor
-            b. Execute EXPLAIN QUERY PLAN
-            c. Return (True, "")
-        3. On error:
-            Return (False, error_message) 
+        1. Check query safety using _is_safe_query
+            If not safe: Return (False, [], "", error_message)
+        
+        2. Set connection = None
+        3. Try:
+            a. Create new connection to DATABASE_PATH
+            b. Create cursor
+            c. Execute query
+            d. Get column names from cursor description
+            e. Fetch all rows
+            f. Create result list:
+                [{column_name: value} for each row]
+            g. Format results using format_results_for_analysis
+            h. Return (True, results, formatted_results, "")
+        4. On SQLite error or any other error:
+            Return (False, [], "", error_message)
+        5. Finally:
+            If connection exists:
+                Close connection 
