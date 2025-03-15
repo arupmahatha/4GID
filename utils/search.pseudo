@@ -1,28 +1,29 @@
 /*
-Purpose: Search for terms in the given table and find the matching column and value along with the match score
+Purpose: Search for terms in the given table and column to find the best matching value
 */
 
-Function search_financial_terms_without_threshold(term, table_name):
+Function search_term_in_column(term, table_name, column_name):
     /*
-    Purpose: Find the best match for the term in the table
-    Returns: Best match for the term
+    Purpose: Find the best match for the term in the specified column of the table
+    Returns: Best match for the term with match score
     */
-    1. Validate table_name exists in synthetic_data.db
-        If not: Return empty dictionary
+    1. Validate inputs:
+        - Check if table_name exists in database
+        - Check if column_name exists in table
+        If either invalid: Return empty dictionary
 
     2. Initialize best_match = None, best_score = 0
         
-    3. For each column in table_name:
-        If column has distinct values:
-            For each value in distinct_values:
-                a. Convert value to string if needed
-                b. Calculate fuzzy match score using token_sort_ratio between term and value
-                c. If score > best_score:
-                    Update best_score
-                    Create best_match dictionary:
-                        - search_term: term
-                        - matched_value: value
-                        - column: column_name
-                        - score: score
+    3. Get distinct values from specified column:
+        - Query database: SELECT DISTINCT {column_name} FROM {table_name}
+        - For each value:
+            a. Convert value to string if needed
+            b. Calculate fuzzy match score using token_sort_ratio between term and value
+            c. If score > best_score:
+                Update best_score
+                Create best_match dictionary:
+                    - search_term: term
+                    - matched_value: value
+                    - score: score
         
     4. Return best_match if found, else return empty dictionary 

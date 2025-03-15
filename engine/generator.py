@@ -1,59 +1,58 @@
-from typing import Dict, List
-from config import Config
-from ...metadata import LearningAnalyticsMetadata
 import os
-from ..llm_config.llm_call import get_test_llm
+import sys
 
-class SQLGenerator:
-    def __init__(self):
-        # Initialize the LLM directly with GPT-Neo
-        self.llm = get_test_llm("gpt-neo")  # Updated to use GPT-Neo
-        self.metadata = LearningAnalyticsMetadata()
+# Add the project root directory to Python path
+project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(project_root)
 
-    def generate_sql(self, query_info: Dict) -> str:
-        """Generate SQL for learning analytics queries"""
-        prompt = f"""Generate a SQL query for learning analytics:
+from typing import Dict
+from llm_config.llm_call import generate_text
+from schema.metadata import SchemaMetadata
 
-Query: {query_info['sub_query']}
-Table: student_performance
+def main_generator(user_query: str) -> Dict:
+    """
+    Generate a single SQL query based on user query and database schema.
+    The query can be simple or complex depending on the user's needs.
+    
+    Args:
+        user_query: Natural language query from user
+        
+    Returns:
+        Dictionary containing:
+            - user_query: Original user query
+            - formatted_metadata: Formatted table and column information
+            - generated_sql: Single SQL query (no additional text/explanations)
+    """
+    # Get metadata instance
+    metadata = SchemaMetadata()
+
+    # 1. Format table and column information
+    formatted_metadata = []
+    for table_name, columns in metadata.tables.items():
+        column_names = [col.name for col in columns]
+        formatted_metadata.append(f"{table_name} ({', '.join(column_names)})")
+    formatted_metadata = "\n".join(formatted_metadata)
+
+    # 2. Generate SQL
+    initial_prompt = f"""Given these tables and columns:
+{formatted_metadata}
+
+Generate a single SQL query for this request:
+{user_query}
 
 Requirements:
-1. Use only columns from student_performance
-2. Focus on extracting meaningful learning insights
-3. Use appropriate aggregation functions
-4. Consider student progress and engagement metrics
-"""
+- Return ONLY the raw SQL query text, no markdown formatting
+- Do not include ```sql or ``` markers
+- No explanations or additional text
+- The query can be simple or complex depending on what's needed
+- Use appropriate JOINs, subqueries, or aggregations if required
+- Ensure the query is complete and executable"""
+    
+    generated_sql = generate_text(initial_prompt)
 
-        sql_query = self.llm.messages.create(
-            model=Config.sonnet_model,
-            messages=[{"role": "user", "content": prompt}],
-            temperature=0,
-            max_tokens=1000
-        ).content[0].text.strip()
-        
-        # Basic validation
-        if not sql_query.lower().startswith('select'):
-            raise ValueError("Generated query must start with SELECT")
-        
-        return sql_query
-
-    def _format_table_schema(self, table_info) -> str:
-        """Format available columns for the prompt"""
-        schema = []
-        for col_name, col_info in table_info.columns.items():
-            schema.append(f"- {col_name}: {col_info.description}")
-        return "\n".join(schema)
-
-    def _format_entity_matches(self, entity_matches: List[Dict], table_info) -> str:
-        """Format entity matches using the extracted entities"""
-        if not entity_matches:
-            return "No specific entity matches found"
-        
-        matches = []
-        for match in entity_matches:
-            matches.append(
-                f"- Found '{match['search_term']}' in column '{match['column']}' "
-                f"matching value '{match['matched_value']}'"
-            )
-        
-        return "\n".join(matches) 
+    # 3. Return results
+    return {
+        "user_query": user_query,
+        "formatted_metadata": formatted_metadata,
+        "generated_sql": generated_sql
+    }

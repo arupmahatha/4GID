@@ -1,46 +1,41 @@
 Class SQLGenerator:
     Initialize:
-        - LLM model instance (using test LLM with "sonnet" model)
-        - Learning Analytics Metadata instance
+        - LLM instance from llm_call.py
+        - Schema metadata instance from metadata.py
 
-    Function generate_sql(query_info):
+    Function main_generator(user_query):
         /*
-        Purpose: Generate SQL query for learning analytics
+        Purpose: Generate a single SQL query using LLM based on user query and schema.
+                The query can be simple or complex depending on the user's needs.
+        Returns: Dictionary containing metadata and the generated SQL query (no additional text/explanations)
         */
-        1. Create prompt with:
-            - Sub-query from query_info
-            - Table name (student_performance)
-            - Requirements:
-                * Use only valid columns
-                * Focus on learning insights
-                * Use appropriate aggregations
-                * Consider student metrics
-        2. Send prompt to LLM
-        3. Get response with SQL query
-        4. Validate query starts with SELECT
-        5. Return generated SQL query
-        6. On error: Raise ValueError
+        1. Format table and column information:
+            - Create empty result string
+            - For each table in metadata.tables:
+                Get column names and format as:
+                "table_name (column1, column2, ...)"
+            - Join all with newlines to create formatted_metadata
 
-    Function format_table_schema(table_info):
-        /*
-        Purpose: Format table columns for prompt
-        */
-        1. Create empty schema list
-        2. For each column in table_info:
-            Add formatted string:
-            "- column_name: description"
-        3. Join all entries with newlines
-        4. Return formatted schema string
+        2. Create initial prompt:
+            "Given these tables and columns:
+             {formatted_metadata}
+             
+             Generate a single SQL query for this request:
+             {user_query}
+             
+             Requirements:
+             - Return ONLY the raw SQL query text, no markdown formatting
+             - Do not include ```sql or ``` markers
+             - No explanations or additional text
+             - The query can be simple or complex depending on what's needed
+             - Use appropriate JOINs, subqueries, or aggregations if required
+             - Ensure the query is complete and executable"
 
-    Function format_entity_matches(entity_matches, table_info):
-        /*
-        Purpose: Format extracted entities for prompt
-        */
-        1. If no matches:
-            Return "No specific entity matches found"
-        2. For each match:
-            Create formatted string:
-            "- Found 'search_term' in column 'column_name' 
-               matching value 'matched_value'"
-        3. Join all entries with newlines
-        4. Return formatted matches string 
+        3. Get SQL from LLM using llm_call.generate_text()
+
+        4. Return dictionary containing:
+            {
+                "user_query": original user query,
+                "formatted_metadata": formatted table and column information,
+                "generated_sql": SQL generated in step 3 (single query only)
+            }

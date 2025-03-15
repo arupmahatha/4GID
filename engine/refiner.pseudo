@@ -1,0 +1,59 @@
+Function refine_sql(sql_query: str):
+    /*
+    Purpose: Extract entities from SQL and refine with matched values
+    Returns: Dictionary containing extraction and refinement results
+    */
+    1. Create entity extraction prompt:
+        "For this SQL query:
+         {sql_query}
+         
+         Extract all table names, column names, and comparison values used.
+         Format each as: table_name|column_name|comparison_value"
+
+    2. Get entity mapping from LLM using llm_call.generate_text()
+    
+    3. Parse extracted entities:
+        - Split each line by '|'
+        - Create entity objects with table, column, value
+
+    4. Search for matching values:
+        For each entity:
+            - If comparison_value is not NULL or number:
+                * Use search_term_in_column(comparison_value, table_name, column_name)
+                * Store matched_value if score is acceptable
+
+    5. If any entities were matched:
+        Create refinement prompt:
+            "Update this SQL query:
+             {sql_query}
+             
+             Replace these values:
+             {original_value1} -> {matched_value1}
+             {original_value2} -> {matched_value2}
+             ..."
+
+        Get refined SQL from LLM using llm_call.generate_text()
+    Else:
+        Use original SQL as refined SQL
+
+    6. Return dictionary containing:
+        {
+            "original_sql": input SQL query,
+            "extracted_entities": [
+                {
+                    "table": table_name,
+                    "column": column_name,
+                    "value": comparison_value
+                },
+                ...
+            ],
+            "value_mappings": [
+                {
+                    "original_value": value,
+                    "matched_value": matched_value,
+                    "score": match_score
+                },
+                ...
+            ],
+            "refined_sql": refined or original SQL query
+        } 
