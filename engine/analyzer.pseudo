@@ -1,6 +1,4 @@
 Class SQLAnalyzer:
-    Initialize:
-        - Import llm_call module
 
     Function main_analyzer(query_info, query_results):
         /*

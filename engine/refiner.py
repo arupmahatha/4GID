@@ -25,38 +25,116 @@ class SQLRefiner:
                 - refined_sql: Refined or original SQL query
         """
         # 1. Extract entities
-        extraction_prompt = f"""Extract table names, column names, and comparison values.
-Return ONLY lines in format: table_name|column_name|comparison_value
+        extraction_prompt = f"""You are an SQL entity extractor. Your ONLY task is to extract real-world entities.
+
+Format: table_name|column_name|comparison_value
+
+Step 1 - SQL Structure Analysis:
+1. First identify the actual database tables (not views/CTEs):
+   - CTEs (WITH clause) are temporary views, NEVER use them as table names
+   - Subqueries are temporary views, NEVER use them as table names
+   - Table aliases (e.g., 'p', 't1') are shortcuts, NEVER use them as table names
+
+2. For each column, trace its true origin:
+   - Follow the JOIN chain to find the source table
+   - Resolve aliases to full table names (e.g., 'p.name' comes from 'Program.name')
+   - Identify computed columns (they are not real data)
+
+Step 2 - Entity Identification:
+ONLY extract entities that meet ALL these criteria:
+1. Table name must be:
+   - An actual database table (not a CTE, view, or alias)
+   - The original source table (not an intermediate join)
+
+2. Column must be:
+   - A real data column (not computed/derived)
+   - From the source table (not aggregated or transformed)
+   - Storing actual entity data (names, descriptions, IDs, etc.)
+
+3. Comparison value must be:
+   - An actual specific value being compared
+   - Not NULL
+   - Not a mathematical comparison (>, <, >=, <=)
+   - Not a logical condition (AND, OR, NOT)
+   - Not a pattern match (LIKE, IN)
+   - Not a number or boolean
+
+NEVER output any of these:
+- NULL values in any field
+- CTE names as table names (e.g., 'ProgramMetrics')
+- Table aliases as table names (e.g., 'p' instead of 'Program')
+- Computed/derived columns
+- Aggregated fields (COUNT, SUM, AVG, etc.)
+- Mathematical comparisons
+- Columns without specific value comparisons
+
+Example Valid Extractions:
+Program|name|John Smith              # Real table, real column, specific value
+Student|email|alice@example.com      # Real table, real column, specific value
+
+Example Invalid Extractions (NEVER output these):
+ProgramMetrics|count|5               # Uses CTE as table
+p|name|NULL                          # Uses alias and NULL
+Program|enrolled_learners|>0         # Mathematical comparison
+Program|avg_completion_time|3.5      # Computed column
+
+CRITICAL INSTRUCTIONS:
+- If no valid entities are found, return ABSOLUTELY NOTHING. Not even empty lines or explanations.
+- ONLY output the exact table_name|column_name|comparison_value format for valid entities.
+- ANY other output format is considered an error.
+
 Query: {sql_query}"""
 
         entity_text = generate_text(extraction_prompt)
-        
-        # 2. Parse extracted entities
+        print("text:\n")
+        print(entity_text)
+        # 2. Parse extracted entities and validate
         extracted_entities = []
         for line in entity_text.strip().split('\n'):
-            if '|' in line:
-                table, column, value = line.strip().split('|')
-                extracted_entities.append({
-                    "table": table.strip(),
-                    "column": column.strip(),
-                    "value": value.strip()
-                })
+            if '|' not in line:
+                continue
+                
+            table, column, value = line.strip().split('|')
+            table = table.strip()
+            column = column.strip()
+            value = value.strip()
+            
+            # Skip invalid entries
+            if (value.upper() == 'NULL' or                # No NULL values
+                table.startswith('p.') or                 # No table aliases
+                any(x in value for x in ['>', '<', '=', 'NULL']) or  # No comparisons
+                value.replace('.','').isdigit()):         # No numbers
+                continue
+                
+            extracted_entities.append({
+                "table": table,
+                "column": column,
+                "value": value
+            })
+            
+        # If no valid entities after filtering
+        if not extracted_entities:
+            return {
+                "original_sql": sql_query,
+                "extracted_entities": [],
+                "value_mappings": [],
+                "refined_sql": sql_query
+            }
 
         # 3. Search for matching values
         value_mappings = []
         for entity in extracted_entities:
-            if entity['value'].lower() not in ['null', 'true', 'false'] and not entity['value'].replace('.','').isdigit():
-                match = search_term_in_column(
-                    term=entity['value'],
-                    table_name=entity['table'],
-                    column_name=entity['column']
-                )
-                if match and match.get('score', 0) > 45:  # Only accept matches with score > 45
-                    value_mappings.append({
-                        "original_value": entity['value'],
-                        "matched_value": match['matched_value'],
-                        "score": match['score']
-                    })
+            match = search_term_in_column(
+                term=entity['value'],
+                table_name=entity['table'],
+                column_name=entity['column']
+            )
+            if match and match.get('score', 0) > 45:  # Only accept matches with score > 45
+                value_mappings.append({
+                    "original_value": entity['value'],
+                    "matched_value": match['matched_value'],
+                    "score": match['score']
+                })
 
         # 4. Refine SQL if needed
         refined_sql = sql_query

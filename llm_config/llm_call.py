@@ -7,7 +7,7 @@ ollama_api_url = "http://localhost:11434/api/generate"  # Updated URL
 conversation_history = []
 max_turns = 5  # Maximum number of turns to keep in the conversation history
 
-def generate_text(prompt: str, model: str = "mistral"):
+def generate_text(prompt: str, model: str = "mistral:instruct"):
     """Generate text using the Ollama model with context."""
     global conversation_history  # Declare conversation_history as global
 

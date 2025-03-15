@@ -1,4 +1,5 @@
 Class SQLExecutor:
+
     Constants:
         # List of dangerous SQL operations to block
         BLOCKED_OPERATIONS = {'delete', 'drop', 'truncate', 'update', 'insert', 'replace', 'alter', 'create', 'rename', 'modify', 'grant', 'revoke'}

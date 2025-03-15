@@ -1,7 +1,4 @@
 Class SQLGenerator:
-    Initialize:
-        - LLM instance from llm_call.py
-        - Schema metadata instance from metadata.py
 
     Function main_generator(user_query):
         /*
