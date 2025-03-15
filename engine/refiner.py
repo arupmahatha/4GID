@@ -86,8 +86,7 @@ CRITICAL INSTRUCTIONS:
 Query: {sql_query}"""
 
         entity_text = generate_text(extraction_prompt)
-        print("text:\n")
-        print(entity_text)
+
         # 2. Parse extracted entities and validate
         extracted_entities = []
         for line in entity_text.strip().split('\n'):
