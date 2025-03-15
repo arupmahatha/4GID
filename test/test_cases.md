@@ -5,6 +5,7 @@
     4. [Career Progression Analysis](#4-career-progression-analysis)
     5. [Program Effectiveness Analysis](#5-program-effectiveness-analysis)
 
+
 ## 1. Basic Student Demographics
 
     ### Query
@@ -64,6 +65,7 @@
     - Age distribution varies by year with 20-25 being most common
     - Gender distribution shows good diversity (F, M, and O categories)
     - Enrollment patterns are relatively consistent across years
+
 
 ## 2. Course Enrollment Patterns
 
@@ -128,6 +130,7 @@
     - Course durations typically range from 4-10 hours
     - Some courses are standalone while others belong to specializations
 
+
 ## 3. Institution Performance Analysis
 
     ### Query Goal
@@ -189,6 +192,7 @@
     - Graduation rates are consistently high (85-90%)
     - Employment rates show room for improvement (5-18%)
 
+
 ## 4. Career Progression Analysis
 
     ### Query Goal
@@ -249,6 +253,7 @@
     - Most learners have 1-2 career moves in their record
     - Academic positions are common in the dataset
     - Department consistency is high between moves
+
 
 ## 5. Program Effectiveness Analysis
 

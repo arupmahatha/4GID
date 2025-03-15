@@ -1,7 +1,8 @@
-from generator import main_generator
+from generator import SQLGenerator
 
 def main():
     """Test SQL generation functionality"""
+    generator = SQLGenerator()
     
     # Test query
     query = "Evaluate the effectiveness of educational programs based on multiple metrics."
@@ -11,7 +12,7 @@ def main():
     try:
         # Generate SQL
         print("\nGenerating SQL...")
-        results = main_generator(query)
+        results = generator.main_generator(query)
         
         print("\nSchema Information:")
         print(results['formatted_metadata'])
