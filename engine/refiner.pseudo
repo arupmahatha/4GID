@@ -1,130 +1,39 @@
 Class SQLRefiner:
 
-    Function main_refiner(sql_query: str):
+    Function main_refiner(sql_query: str, value_mappings: List[Dict], llm_model = "mistral:instruct") -> Dict:
         /*
-        Purpose: Extract entities from SQL and refine with matched values
-        Returns: Dictionary containing extraction and refinement results
-        */
-        1. Create entity extraction prompt:
-            "You are an SQL entity extractor. Your ONLY task is to extract real-world entities.
-             
-             Format: table_name|column_name|comparison_value
-             
-             Step 1 - SQL Structure Analysis:
-             1. First identify the actual database tables (not views/CTEs):
-                - CTEs (WITH clause) are temporary views, NEVER use them as table names
-                - Subqueries are temporary views, NEVER use them as table names
-                - Table aliases (e.g., 'p', 't1') are shortcuts, NEVER use them as table names
-             
-             2. For each column, trace its true origin:
-                - Follow the JOIN chain to find the source table
-                - Resolve aliases to full table names (e.g., 'p.name' comes from 'Program.name')
-                - Identify computed columns (they are not real data)
-             
-             Step 2 - Entity Identification:
-             ONLY extract entities that meet ALL these criteria:
-             1. Table name must be:
-                - An actual database table (not a CTE, view, or alias)
-                - The original source table (not an intermediate join)
-             
-             2. Column must be:
-                - A real data column (not computed/derived)
-                - From the source table (not aggregated or transformed)
-                - Storing actual entity data (names, descriptions, IDs, etc.)
-             
-             3. Comparison value must be:
-                - An actual specific value being compared
-                - Not NULL
-                - Not a mathematical comparison (>, <, >=, <=)
-                - Not a logical condition (AND, OR, NOT)
-                - Not a pattern match (LIKE, IN)
-                - Not a number or boolean
-             
-             NEVER output any of these:
-             - NULL values in any field
-             - CTE names as table names (e.g., 'ProgramMetrics')
-             - Table aliases as table names (e.g., 'p' instead of 'Program')
-             - Computed/derived columns
-             - Aggregated fields (COUNT, SUM, AVG, etc.)
-             - Mathematical comparisons
-             - Columns without specific value comparisons
-             
-             Example Valid Extractions:
-             Program|name|John Smith              # Real table, real column, specific value
-             Student|email|alice@example.com      # Real table, real column, specific value
-             
-             Example Invalid Extractions (NEVER output these):
-             ProgramMetrics|count|5               # Uses CTE as table
-             p|name|NULL                          # Uses alias and NULL
-             Program|enrolled_learners|>0         # Mathematical comparison
-             Program|avg_completion_time|3.5      # Computed column
-             
-             CRITICAL INSTRUCTIONS:
-             - If no valid entities are found, return ABSOLUTELY NOTHING. Not even empty lines or explanations.
-             - ONLY output the exact table_name|column_name|comparison_value format for valid entities.
-             - ANY other output format is considered an error.
-             
-             Query: {sql_query}"
-
-        2. Get entity mapping from LLM using llm_call.generate_text()
+        Refine SQL query with provided value mappings
         
-        3. Parse and validate extracted entities:
-            extracted_entities = []
-            For each line in entity_text:
-                If line contains '|':
-                    - Split line into table, column, value
-                    - Strip whitespace from each component
-                    
-                    Skip if any of these conditions are true:
-                    - value is 'NULL' (case insensitive)
-                    - table starts with 'p.'
-                    - value contains '>', '<', '=', 'NULL'
-                    - value is a number (allowing decimals)
-                    
-                    If valid, add to extracted_entities:
-                    {
-                        "table": table,
-                        "column": column,
-                        "value": value
-                    }
-
-        4. If extracted_entities is empty:
-            Return {
-                "original_sql": sql_query,
-                "extracted_entities": [],
-                "value_mappings": [],
-                "refined_sql": sql_query
-            }
-
-        5. Search for matching values:
-            value_mappings = []
-            For each entity in extracted_entities:
-                match = search_term_in_column(
-                    term=entity['value'],
-                    table_name=entity['table'],
-                    column_name=entity['column']
-                )
-                If match exists AND match['score'] > 45:
-                    Add to value_mappings:
-                    {
-                        "original_value": entity['value'],
-                        "matched_value": match['matched_value'],
-                        "score": match['score']
-                    }
-
-        6. If value_mappings is not empty:
-            Create refinement prompt:
-                "Return ONLY the modified SQL query with these replacements:
-                 {Join each mapping as: original_value -> matched_value}
-                 Query: {sql_query}"
-
-            Get refined SQL from LLM using llm_call.generate_text()
-        Else:
-            refined_sql = sql_query
-
-        7. Return {
-            "original_sql": sql_query,
-            "extracted_entities": extracted_entities,
-            "value_mappings": value_mappings,
-            "refined_sql": refined_sql
-        } 
+        Args:
+            sql_query: SQL query to refine
+            value_mappings: List of dictionaries containing original and matched values
+            llm_model: The LLM model to use for refinement (default: "mistral:instruct")
+            
+        Returns:
+            Dictionary containing:
+                - original_sql: Input SQL query
+                - value_mappings: List of matched values with scores
+                - refined_sql: Refined or original SQL query
+        */
+        
+        1. If no value mappings provided:
+           Return {
+               "original_sql": sql_query,
+               "value_mappings": [],
+               "refined_sql": sql_query
+           }
+        
+        2. Create refinement prompt:
+           prompt = f"""Return ONLY the modified SQL query with these replacements:
+           {Join each mapping as: original_value -> matched_value}
+           Query: {sql_query}"""
+        
+        3. Get refined SQL from LLM:
+           refined_sql = generate_text(prompt, model=llm_model)
+        
+        4. Return results:
+           Return {
+               "original_sql": sql_query,
+               "value_mappings": value_mappings,
+               "refined_sql": refined_sql
+           } 

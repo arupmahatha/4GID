@@ -6,17 +6,17 @@ def main():
     
     # Test query
     query = "Evaluate the effectiveness of educational programs based on multiple metrics."
+    llm_model = "mistral:instruct"  # Default model
 
+    print("\nTesting SQL Generator:")
     print(f"\nQuery: '{query}'")
+    print(f"\nUsing LLM model: {llm_model}")
     
     try:
         # Generate SQL
-        print("\nGenerating SQL...")
-        results = generator.main_generator(query)
-        
+        results = generator.main_generator(query, llm_model=llm_model)
         print("\nSchema Information:")
         print(results['formatted_metadata'])
-        
         print("\nGenerated SQL:")
         print(results['generated_sql'])
         

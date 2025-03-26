@@ -1,9 +1,12 @@
 Class SQLGenerator:
 
-    Function main_generator(user_query):
+    Function main_generator(user_query, llm_model = "mistral:instruct"):
         /*
         Purpose: Generate a single SQL query using LLM based on user query and schema.
                 The query can be simple or complex depending on the user's needs.
+        Parameters:
+            - user_query: Natural language query from user
+            - llm_model: The LLM model to use for generation (default: "mistral:instruct")
         Returns: Dictionary containing metadata and the generated SQL query (no additional text/explanations)
         */
         1. Format table and column information:
@@ -28,7 +31,7 @@ Class SQLGenerator:
              - Use appropriate JOINs, subqueries, or aggregations if required
              - Ensure the query is complete and executable"
 
-        3. Get SQL from LLM using llm_call.generate_text()
+        3. Get SQL from LLM using llm_call.generate_text() with model parameter
 
         4. Return dictionary containing:
             {

@@ -1,11 +1,12 @@
 Class SQLAnalyzer:
 
-    Function main_analyzer(query_info, query_results):
+    Function main_analyzer(query_info, query_results, llm_model = "mistral:instruct"):
         /*
         Purpose: Analyze SQL query results and generate comprehensive insights
         Parameters:
             - query_info: Original query information
             - query_results: List of dictionaries containing query results
+            - llm_model: The LLM model to use for analysis (default: "mistral:instruct")
         */
         1. Try:
             a. Create analysis prompt:
@@ -22,7 +23,7 @@ Class SQLAnalyzer:
                 3. Important trends or anomalies
                 4. Actionable insights and recommendations
                 """
-            b. Get analysis from llm_call.generate_text with prompt
+            b. Get analysis from llm_call.generate_text with prompt and model parameter
             c. Return:
                 - Original query info
                 - Number of records (len(query_results))

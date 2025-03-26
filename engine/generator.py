@@ -10,13 +10,14 @@ from llm_config.llm_call import generate_text
 from schema.metadata import SchemaMetadata
 
 class SQLGenerator:
-    def main_generator(self, user_query: str) -> Dict:
+    def main_generator(self, user_query: str, llm_model: str = "mistral:instruct") -> Dict:
         """
         Generate a single SQL query based on user query and database schema.
         The query can be simple or complex depending on the user's needs.
         
         Args:
             user_query: Natural language query from user
+            llm_model: The LLM model to use for generation (default: "mistral:instruct")
             
         Returns:
             Dictionary containing:
@@ -44,12 +45,12 @@ Generate a single SQL query for this request:
 Requirements:
 - Return ONLY the raw SQL query text, no markdown formatting
 - Do not include ```sql or ``` markers
-- No explanations or additional text
 - The query can be simple or complex depending on what's needed
 - Use appropriate JOINs, subqueries, or aggregations if required
-- Ensure the query is complete and executable"""
+- Ensure the query is complete and executable
+- Only return the SQL query. No explanations, no additional text."""
         
-        generated_sql = generate_text(initial_prompt)
+        generated_sql = generate_text(initial_prompt, model=llm_model)
 
         # 3. Return results
         return {

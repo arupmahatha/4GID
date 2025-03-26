@@ -33,7 +33,7 @@ def main():
         """
     # test_query = "DELETE FROM Institution WHERE id = 1;"
 
-    print(f"Executing Query:\n{test_query}")
+    print(f"\nExecuting Query:{test_query}")
     
     success, results, formatted_results, error = executor.main_executor(test_query)
     

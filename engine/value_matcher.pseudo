@@ -1,0 +1,34 @@
+Class ValueMatcher:
+
+    Function main_value_matcher(entity: Dict) -> List[Dict]:
+        /*
+        Find matching values in the database for a single extracted entity
+        
+        Args:
+            entity: Dictionary containing table, column, value mapping
+            
+        Returns:
+            List of dictionaries containing original value, matched value and match score
+        */
+        
+        1. Initialize empty list for value mappings:
+           value_mappings = []
+        
+        2. Set min_match_score to 45
+        
+        3. Search for matching value in database:
+           match = search_term_in_column(
+               term=entity['value'],
+               table_name=entity['table'],
+               column_name=entity['column']
+           )
+        
+        4. If match exists and score > min_match_score:
+           Add to value_mappings:
+           {
+               "original_value": entity['value'],
+               "matched_value": match['matched_value'],
+               "score": match['score']
+           }
+        
+        5. Return value_mappings 
