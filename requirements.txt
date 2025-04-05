@@ -1,6 +1,17 @@
-# HTTP requests for Ollama API
+# HTTP requests for API calls
 requests>=2.31.0
+
+# Environment variable management
+python-dotenv>=1.0.0
 
 # String matching and search
 fuzzywuzzy>=0.18.0
 python-Levenshtein>=0.21.0  # Optional, but improves fuzzywuzzy performance
+
+# Database and data handling
+sqlalchemy>=2.0.0
+pandas>=2.0.0
+numpy>=1.24.0
+
+# Data generation
+faker>=20.0.0
