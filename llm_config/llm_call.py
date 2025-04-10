@@ -2,16 +2,18 @@ import os
 import requests
 import json
 
-# Global variable to hold the Hugging Face API URL and key
+# Global variables for API configurations
 huggingface_api_url = "https://api-inference.huggingface.co/models/"
 HUGGINGFACE_API_KEY = os.getenv("HUGGINGFACE_API_KEY")
+DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY")
+DEEPSEEK_API_URL = "https://api.deepseek.com/v1/chat/completions"
 
 # Global conversation history
 conversation_history = []
 max_turns = 5  # Maximum number of conversation turns to keep in history
 
 def generate_text(prompt: str, model: str = "mistralai/Mistral-7B-Instruct-v0.3"):
-    """Generate text using the Hugging Face model with conversation history."""
+    """Generate text using either Hugging Face or DeepSeek model with conversation history."""
     global conversation_history
     
     # Add current prompt to history
@@ -36,7 +38,14 @@ def generate_text(prompt: str, model: str = "mistralai/Mistral-7B-Instruct-v0.3"
         # For the first message, just use the prompt as is
         final_prompt = f"User: {prompt}\nAssistant:"
     
-    # Set up the headers with your API key
+    # Check if the model is from DeepSeek
+    if "deepseek" in model.lower():
+        return _call_deepseek_api(final_prompt, model)
+    else:
+        return _call_huggingface_api(final_prompt, model)
+
+def _call_huggingface_api(prompt: str, model: str):
+    """Make API call to Hugging Face models."""
     headers = {
         "Authorization": f"Bearer {HUGGINGFACE_API_KEY}",
         "Content-Type": "application/json"
@@ -44,11 +53,10 @@ def generate_text(prompt: str, model: str = "mistralai/Mistral-7B-Instruct-v0.3"
     
     # Format prompt based on model type
     if "mistral" in model.lower():
-        formatted_prompt = f"<s>[INST] {final_prompt} [/INST]"
+        formatted_prompt = f"<s>[INST] {prompt} [/INST]"
     else:
-        formatted_prompt = final_prompt
+        formatted_prompt = prompt
     
-    # Set up the payload
     payload = {
         "inputs": formatted_prompt,
         "parameters": {
@@ -60,28 +68,16 @@ def generate_text(prompt: str, model: str = "mistralai/Mistral-7B-Instruct-v0.3"
         }
     }
     
-    # Send the request to the specific model endpoint
     response = requests.post(f"{huggingface_api_url}{model}", headers=headers, json=payload)
     
     if response.status_code == 200:
         try:
-            # Extract the generated text
             response_json = response.json()
             if isinstance(response_json, list) and len(response_json) > 0:
                 generated_text = response_json[0].get("generated_text", "").strip()
-                
-                # Clean up any potential prefixes/formatting
                 if "Assistant:" in generated_text:
                     generated_text = generated_text.split("Assistant:", 1)[1].strip()
-                
-                # Add the response to the conversation history
-                conversation_history.append({"role": "assistant", "content": generated_text})
-                
-                # Trim history if needed
-                if len(conversation_history) > max_turns * 2:
-                    # Keep the most recent turns
-                    conversation_history = conversation_history[-(max_turns * 2):]
-                
+                _update_conversation_history(generated_text)
                 return generated_text
             return "Error: Unexpected API response format"
         except json.JSONDecodeError:
@@ -90,6 +86,52 @@ def generate_text(prompt: str, model: str = "mistralai/Mistral-7B-Instruct-v0.3"
         error_msg = f"Error: {response.status_code} - {response.text}"
         print(error_msg)
         return error_msg
+
+def _call_deepseek_api(prompt: str, model: str):
+    """Make API call to DeepSeek models."""
+    headers = {
+        "Authorization": f"Bearer {DEEPSEEK_API_KEY}",
+        "Content-Type": "application/json"
+    }
+    
+    # Format messages for DeepSeek API
+    messages = []
+    for entry in conversation_history:
+        messages.append({
+            "role": entry["role"],
+            "content": entry["content"]
+        })
+    
+    payload = {
+        "model": model,
+        "messages": messages,
+        "temperature": 0.1,
+        "max_tokens": 512
+    }
+    
+    response = requests.post(DEEPSEEK_API_URL, headers=headers, json=payload)
+    
+    if response.status_code == 200:
+        try:
+            response_json = response.json()
+            generated_text = response_json.get("choices", [{}])[0].get("message", {}).get("content", "").strip()
+            _update_conversation_history(generated_text)
+            return generated_text
+        except (json.JSONDecodeError, KeyError, IndexError):
+            return "Error: Invalid API response format"
+    else:
+        error_msg = f"Error: {response.status_code} - {response.text}"
+        print(error_msg)
+        return error_msg
+
+def _update_conversation_history(generated_text: str):
+    """Update conversation history with the generated response."""
+    global conversation_history
+    conversation_history.append({"role": "assistant", "content": generated_text})
+    
+    # Trim history if needed
+    if len(conversation_history) > max_turns * 2:
+        conversation_history = conversation_history[-(max_turns * 2):]
 
 def reset_conversation():
     """Reset the conversation history."""
