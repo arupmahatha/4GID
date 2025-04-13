@@ -6,14 +6,16 @@ import json
 huggingface_api_url = "https://api-inference.huggingface.co/models/"
 HUGGINGFACE_API_KEY = os.getenv("HUGGINGFACE_API_KEY")
 DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY")
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 DEEPSEEK_API_URL = "https://api.deepseek.com/v1/chat/completions"
+GEMINI_API_URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={GEMINI_API_KEY}"
 
 # Global conversation history
 conversation_history = []
 max_turns = 5  # Maximum number of conversation turns to keep in history
 
 def generate_text(prompt: str, model: str = "mistralai/Mistral-7B-Instruct-v0.3"):
-    """Generate text using either Hugging Face or DeepSeek model with conversation history."""
+    """Generate text using either Hugging Face, DeepSeek, or Gemini model with conversation history."""
     global conversation_history
     
     # Add current prompt to history
@@ -38,9 +40,11 @@ def generate_text(prompt: str, model: str = "mistralai/Mistral-7B-Instruct-v0.3"
         # For the first message, just use the prompt as is
         final_prompt = f"User: {prompt}\nAssistant:"
     
-    # Check if the model is from DeepSeek
+    # Check which model to use
     if "deepseek" in model.lower():
         return _call_deepseek_api(final_prompt, model)
+    elif "gemini" in model.lower():
+        return _call_gemini_api(final_prompt, model)
     else:
         return _call_huggingface_api(final_prompt, model)
 
@@ -121,6 +125,44 @@ def _call_deepseek_api(prompt: str, model: str):
             return "Error: Invalid API response format"
     else:
         error_msg = f"Error: {response.status_code} - {response.text}"
+        print(error_msg)
+        return error_msg
+
+def _call_gemini_api(prompt: str, model: str):
+    """Make API call to Gemini models using REST API."""
+    headers = {
+        "Content-Type": "application/json"
+    }
+    
+    # Format the request payload
+    payload = {
+        "contents": [{
+            "parts": [{
+                "text": prompt
+            }]
+        }],
+        "generationConfig": {
+            "temperature": 0.1,
+            "topP": 0.95,
+            "maxOutputTokens": 512
+        }
+    }
+    
+    try:
+        response = requests.post(GEMINI_API_URL, headers=headers, json=payload)
+        
+        if response.status_code == 200:
+            response_json = response.json()
+            generated_text = response_json.get("candidates", [{}])[0].get("content", {}).get("parts", [{}])[0].get("text", "").strip()
+            _update_conversation_history(generated_text)
+            return generated_text
+        else:
+            error_msg = f"Error: {response.status_code} - {response.text}"
+            print(error_msg)
+            return error_msg
+            
+    except Exception as e:
+        error_msg = f"Error calling Gemini API: {str(e)}"
         print(error_msg)
         return error_msg
 
