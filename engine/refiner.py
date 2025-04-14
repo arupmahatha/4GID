@@ -32,9 +32,20 @@ class SQLRefiner:
                 "refined_sql": sql_query
             }
 
-        # Refine SQL with provided mappings
+        # Filter out mappings with score 100
+        filtered_mappings = [mapping for mapping in value_mappings if mapping.get("score", 0) != 100]
+        
+        # If no mappings remain after filtering, return original query
+        if not filtered_mappings:
+            return {
+                "original_sql": sql_query,
+                "value_mappings": value_mappings,
+                "refined_sql": sql_query
+            }
+
+        # Refine SQL with filtered mappings
         refinement_prompt = f"""Return ONLY the modified SQL query with these replacements:
-{chr(10).join(f"{m['original_value']} -> {m['matched_value']}" for m in value_mappings)}
+{chr(10).join(f"{m['original_value']} -> {m['matched_value']}" for m in filtered_mappings)}
 Query: {sql_query}"""
         
         refined_sql = generate_text(refinement_prompt, model=llm_model)

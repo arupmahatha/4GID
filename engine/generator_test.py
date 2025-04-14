@@ -5,8 +5,8 @@ def main():
     generator = SQLGenerator()
     
     # Test query
-    query = "Evaluate the effectiveness of educational programs based on multiple metrics."
-    llm_model = "mistral:instruct"  # Default model
+    query = "What is the difference in count between male and female students."
+    llm_model = "deepseek-chat"
 
     print("\nTesting SQL Generator:")
     print(f"\nQuery: '{query}'")

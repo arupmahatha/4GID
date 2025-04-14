@@ -14,6 +14,9 @@ Class SQLGenerator:
             - For each table in metadata.tables:
                 Get column names and format as:
                 "table_name (column1, column2, ...)"
+                For each column with choices:
+                    Add choices information as:
+                    "  - column_name: [choice1, choice2, ...]"
             - Join all with newlines to create formatted_metadata
 
         2. Create initial prompt:
@@ -29,7 +32,8 @@ Class SQLGenerator:
              - No explanations or additional text
              - The query can be simple or complex depending on what's needed
              - Use appropriate JOINs, subqueries, or aggregations if required
-             - Ensure the query is complete and executable"
+             - Ensure the query is complete and executable
+             - When filtering on columns with choices, use the exact choice values provided in the metadata"
 
         3. Get SQL from LLM using llm_call.generate_text() with model parameter
 

@@ -12,11 +12,11 @@ def main():
         {
             "original_value": "John Handcock",
             "matched_value": "John Hancock",
-            "score": 0.95
+            "score": 96
         }
     ]
     
-    llm_model = "mistral:instruct"  # Default model
+    llm_model = "deepseek-chat"
     
     print(f"\nTesting SQL Refinement:")
     print(f"\nInput SQL: '{sql_query}'")

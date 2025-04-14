@@ -23,15 +23,25 @@ Class SQLRefiner:
                "refined_sql": sql_query
            }
         
-        2. Create refinement prompt:
+        2. Filter out mappings with score 100:
+           filtered_mappings = [mapping for mapping in value_mappings if mapping.get("score", 0) != 100]
+           
+        3. If no mappings remain after filtering:
+           Return {
+               "original_sql": sql_query,
+               "value_mappings": value_mappings,
+               "refined_sql": sql_query
+           }
+        
+        4. Create refinement prompt:
            prompt = f"""Return ONLY the modified SQL query with these replacements:
-           {Join each mapping as: original_value -> matched_value}
+           {Join each mapping in filtered_mappings as: original_value -> matched_value}
            Query: {sql_query}"""
         
-        3. Get refined SQL from LLM:
+        5. Get refined SQL from LLM:
            refined_sql = generate_text(prompt, model=llm_model)
         
-        4. Return results:
+        6. Return results:
            Return {
                "original_sql": sql_query,
                "value_mappings": value_mappings,
