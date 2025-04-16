@@ -7,7 +7,7 @@ GENDER = [('M', 'male'), ('F', 'female'), ('O', 'other')]
 MODULE_TYPE = [('T', 'theory'), ('P', 'practical')]
 
 
-# Create your models here.
+# Create your models here
 
 class Country(models.Model):
    name = models.CharField(max_length=30, default='', unique=True)
