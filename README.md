@@ -11,6 +11,76 @@ A sophisticated system that leverages multiple Large Language Models (LLMs) to g
 - **Query Refinement**: Refines and optimizes generated SQL queries
 - **Result Analysis**: Executes queries and provides detailed analysis of results
 
+## Our Approach
+
+### Multi-Model Architecture
+Our system employs a unique multi-model architecture that combines the strengths of different LLMs:
+- **DeepSeek**: Primary model for SQL generation with strong understanding of database schemas
+- **Mistral**: Secondary model providing alternative SQL generation approaches
+- **Gemini**: Acts as an intelligent validator to select the most accurate query
+
+### Workflow Process
+1. **Natural Language Processing**
+   - Input query analysis
+   - Entity recognition
+   - Intent classification
+
+2. **SQL Generation**
+   - Parallel generation using multiple LLMs
+   - Schema-aware query construction
+   - Syntax validation
+
+3. **Query Validation**
+   - Cross-model comparison
+   - Semantic analysis
+   - Performance optimization
+
+4. **Execution and Analysis**
+   - Safe query execution
+   - Result validation
+   - Performance metrics collection
+
+## Current Developments
+
+### Active Research Areas
+1. **Enhanced Entity Recognition**
+   - Improving accuracy of entity extraction from natural language
+   - Better handling of complex relationships between entities
+   - Integration with domain-specific knowledge bases
+
+2. **Query Optimization**
+   - Development of more efficient SQL generation algorithms
+   - Implementation of query performance prediction
+   - Automated query optimization techniques
+
+3. **Multi-Model Collaboration**
+   - Advanced model selection strategies
+   - Improved consensus mechanisms
+   - Dynamic model weighting based on query type
+
+### Recent Improvements
+- Implemented fuzzy matching for better value recognition
+- Enhanced error handling and recovery mechanisms
+- Added support for complex nested queries
+- Improved handling of temporal queries
+- Integration of performance monitoring tools
+
+### Upcoming Features
+1. **Advanced Analytics**
+   - Query pattern analysis
+   - Usage statistics and insights
+   - Performance optimization recommendations
+
+2. **Extended Language Support**
+   - Support for more natural language variations
+   - Better handling of domain-specific terminology
+   - Multi-language query support
+
+3. **Enhanced Security**
+   - Query sanitization improvements
+   - Access control integration
+   - Audit logging capabilities
+
 ## Project Structure
 
 ```
@@ -98,19 +168,3 @@ The system can handle various types of queries, such as:
 - Querying institution-specific information
 - Tracking course completion status
 - Analyzing enrollment patterns
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a Pull Request
-
-## License
-
-[Specify your license here]
-
-## Contact
-
-[Your contact information] 
