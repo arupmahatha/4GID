@@ -4,16 +4,26 @@ from sqlalchemy.ext.declarative import declarative_base
 import os
 from urllib.parse import quote_plus
 import re
+from dotenv import load_dotenv
 
-# Database configuration
+# Load environment variables from .env file
+load_dotenv()
+
+# Database configuration from environment variables
 DB_CONFIG = {
-    'client': 'postgres',
-    'host': '3.111.123.209',
-    'port': 5432,
-    'database': 'poims',
-    'username': 'devadmin',
-    'password': '4gid@2007'
+    'client': os.getenv('DB_CLIENT', 'postgres'),
+    'host': os.getenv('DB_HOST'),
+    'port': int(os.getenv('DB_PORT', '5432')),
+    'database': os.getenv('DB_NAME'),
+    'username': os.getenv('DB_USER'),
+    'password': os.getenv('DB_PASSWORD')
 }
+
+# Validate required environment variables
+required_vars = ['DB_HOST', 'DB_NAME', 'DB_USER', 'DB_PASSWORD']
+missing_vars = [var for var in required_vars if not os.getenv(var)]
+if missing_vars:
+    raise ValueError(f"Missing required environment variables: {', '.join(missing_vars)}")
 
 # Create SQLAlchemy engine with read-only mode
 # URL encode the password to handle special characters
