@@ -1,17 +1,21 @@
 # HTTP requests for API calls
-requests>=2.31.0
+requests>=2.32.3
 
 # Environment variable management
-python-dotenv>=1.0.0
+python-dotenv>=1.1.0
 
 # String matching and search
 fuzzywuzzy>=0.18.0
-python-Levenshtein>=0.21.0  # Optional, but improves fuzzywuzzy performance
+python-Levenshtein>=0.27.1  # Optional, but improves fuzzywuzzy performance
 
 # Database and data handling
-sqlalchemy>=2.0.0
-pandas>=2.0.0
-numpy>=1.24.0
+sqlalchemy>=2.0.40
+pandas>=2.2.3
+numpy>=2.2.5
+psycopg2-binary>=2.9.10  # PostgreSQL adapter for Python
+
+# Console output formatting
+rich>=14.0.0  # For beautiful console output
 
 # Data generation
-faker>=20.0.0
+faker>=37.1.0
