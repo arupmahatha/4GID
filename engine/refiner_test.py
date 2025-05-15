@@ -16,7 +16,7 @@ def main():
         }
     ]
     
-    llm_model = "deepseek-chat"
+    llm_model = "mistralai/Mistral-7B-Instruct-v0.3"
     
     print(f"\nTesting SQL Refinement:")
     print(f"\nInput SQL: '{sql_query}'")

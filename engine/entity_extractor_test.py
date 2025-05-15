@@ -10,7 +10,7 @@ def main():
     WHERE l.name = 'David Gardner' 
     OR l.email = 'allisonthomson@example.com';"""
     
-    llm_model = "mistral:instruct"  # Default model
+    llm_model = "gemini"
 
     print("\nTesting Entity Extractor:")
     print(f"\nTest Query: {test_query}")

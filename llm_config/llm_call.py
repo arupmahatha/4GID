@@ -3,11 +3,11 @@ import requests
 import json
 
 # Global variables for API configurations
-huggingface_api_url = "https://api-inference.huggingface.co/models/"
 HUGGINGFACE_API_KEY = os.getenv("HUGGINGFACE_API_KEY")
-DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY")
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+huggingface_api_url = "https://api-inference.huggingface.co/models/"
 DEEPSEEK_API_URL = "https://api.deepseek.com/v1/chat/completions"
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY")
 GEMINI_API_URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={GEMINI_API_KEY}"
 
 # Global conversation history
