@@ -8,18 +8,18 @@ Function search_term_in_column(term, table_name, column_name):
     Returns: Best match for the term with match score
     */
     1. Validate inputs:
-        - Check if table_name exists in database
-        - Check if column_name exists in table
-        If either invalid: Return empty dictionary
+        - Attempt to query the database using execute_query_with_columns from db_config
+        - If query fails (table or column does not exist), return empty dictionary
 
     2. Initialize best_match = None, best_score = 0
         
     3. Get distinct values from specified column:
         - Query database: SELECT DISTINCT {column_name} FROM {table_name}
         - For each value:
-            a. Convert value to string if needed
-            b. Calculate fuzzy match score using token_sort_ratio between term and value
-            c. If score > best_score:
+            a. Skip if value is None
+            b. Convert value to string if needed
+            c. Calculate fuzzy match score using token_sort_ratio between term and value
+            d. If score > best_score:
                 Update best_score
                 Create best_match dictionary:
                     - search_term: term

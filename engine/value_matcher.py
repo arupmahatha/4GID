@@ -6,8 +6,7 @@ project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(project_root)
 
 from typing import Dict, List
-from utils.db_config import execute_query_pandas
-from fuzzywuzzy import fuzz
+from utils.search import search_term_in_column
 
 class ValueMatcher:
     def main_value_matcher(self, entity: Dict) -> List[Dict]:
@@ -22,44 +21,15 @@ class ValueMatcher:
         """
         value_mappings = []
         min_match_score = 45
-
-        try:
-            # Get distinct values from the specified column
-            query = f"""
-            SELECT DISTINCT {entity['column']} as value
-            FROM {entity['table']}
-            WHERE {entity['column']} IS NOT NULL
-            """
-            
-            results_df = execute_query_pandas(query)
-            distinct_values = results_df['value'].tolist()
-
-            best_match = None
-            best_score = 0
-
-            # Check each value for matches
-            for value in distinct_values:
-                # Convert value to string if needed
-                if not isinstance(value, str):
-                    value = str(value)
-
-                # Calculate fuzzy match score
-                score = fuzz.token_sort_ratio(entity['value'].lower(), value.lower())
-
-                # Update if better match found
-                if score > best_score:
-                    best_score = score
-                    best_match = {
-                        'original_value': entity['value'],
-                        'matched_value': value,
-                        'score': score
-                    }
-
-            # Add match if score is above threshold
-            if best_match and best_match['score'] > min_match_score:
-                value_mappings.append(best_match)
-
-        except Exception as e:
-            print(f"Error matching values: {str(e)}")
-
+        match = search_term_in_column(
+            term=entity['value'],
+            table_name=entity['table'],
+            column_name=entity['column']
+        )
+        if match and match.get('score', 0) > min_match_score:
+            value_mappings.append({
+                "original_value": entity['value'],
+                "matched_value": match['matched_value'],
+                "score": match['score']
+            })
         return value_mappings 

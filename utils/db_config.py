@@ -75,23 +75,23 @@ def get_db():
     finally:
         db.close()
 
-def execute_query(query, params=None):
-    """
-    Execute a raw SQL query and return results (read-only)
-    """
-    if not is_read_only_query(query):
-        raise ValueError("Only SELECT queries are allowed for security reasons")
-    
-    with engine.connect() as connection:
-        result = connection.execute(text(query), params or {})
-        return result.fetchall()
-
 def execute_query_pandas(query, params=None):
     """
     Execute a query and return results as pandas DataFrame (read-only)
     """
     if not is_read_only_query(query):
         raise ValueError("Only SELECT queries are allowed for security reasons")
-    
     import pandas as pd
-    return pd.read_sql_query(text(query), engine, params=params) 
+    return pd.read_sql_query(text(query), engine, params=params)
+
+def execute_query_with_columns(query, params=None):
+    """
+    Execute a raw SQL query and return (columns, rows) (read-only)
+    """
+    if not is_read_only_query(query):
+        raise ValueError("Only SELECT queries are allowed for security reasons")
+    with engine.connect() as connection:
+        result = connection.execute(text(query), params or {})
+        columns = result.keys()
+        rows = result.fetchall()
+        return columns, rows 

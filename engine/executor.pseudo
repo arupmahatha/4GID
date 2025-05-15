@@ -1,5 +1,4 @@
 Class SQLExecutor:
-
     Constants:
         # List of dangerous SQL operations to block
         BLOCKED_OPERATIONS = {'delete', 'drop', 'truncate', 'update', 'insert', 'replace', 'alter', 'create', 'rename', 'modify', 'grant', 'revoke'}
@@ -39,11 +38,11 @@ Class SQLExecutor:
         */
         1. Check query safety using _is_safe_query
             If not safe: Return (False, [], "", error_message)
-        
         2. Try:
-            a. Execute query using execute_query_pandas from db_config
-            b. Convert DataFrame to list of dictionaries
-            c. Format results using format_results_for_analysis
-            d. Return (True, results, formatted_results, "")
-        3. On any error:
+            a. Execute query using execute_query utility from db_config
+            b. If no rows, results = []
+            c. Else, convert each row to dict (column_name: value)
+            d. Format results using format_results_for_analysis
+            e. Return (True, results, formatted_results, "")
+        3. On error:
             Return (False, [], "", error_message) 

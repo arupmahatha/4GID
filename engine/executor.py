@@ -1,6 +1,14 @@
 from typing import Dict, List, Tuple
 import re
-from utils.db_config import execute_query, execute_query_pandas
+
+import os
+import sys
+
+# Add the project root directory to Python path
+project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(project_root)
+
+from utils.db_config import execute_query_with_columns
 
 class SQLExecutor:
     # List of dangerous SQL operations to block
@@ -68,7 +76,6 @@ class SQLExecutor:
     def main_executor(self, sql_query: str) -> Tuple[bool, List[Dict], str, str]:
         """
         Validate and execute SQL query safely
-        
         Returns:
             Tuple containing:
             - success: bool
@@ -82,16 +89,10 @@ class SQLExecutor:
             return False, [], "", error_msg
 
         try:
-            # Execute query using the actual database connection
-            results_df = execute_query_pandas(sql_query)
-            
-            # Convert DataFrame to list of dictionaries
-            results = results_df.to_dict('records')
-            
-            # Format results for analysis
+            # Execute the query using the new db_config utility
+            columns, rows = execute_query_with_columns(sql_query)
+            results = [dict(zip(columns, row)) for row in rows]
             formatted_results = self.format_results_for_analysis(results)
-            
             return True, results, formatted_results, ""
-            
         except Exception as e:
             return False, [], "", str(e) 

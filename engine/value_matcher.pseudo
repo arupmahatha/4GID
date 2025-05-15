@@ -1,33 +1,34 @@
 Class ValueMatcher:
 
-    Function main_value_matcher(input_value, table_name, column_name):
+    Function main_value_matcher(entity: Dict) -> List[Dict]:
         /*
-        Purpose: Find matching values in the database for a given entity
-        Parameters:
-            - input_value: The value to match
-            - table_name: The table to search in
-            - column_name: The column to search in
-        Returns: List of matched values with their scores
+        Find matching values in the database for a single extracted entity
+        
+        Args:
+            entity: Dictionary containing table, column, value mapping
+            
+        Returns:
+            List of dictionaries containing original value, matched value and match score
         */
-        1. Query database for distinct values:
-           - Construct SQL query: "SELECT DISTINCT {column_name} FROM {table_name}"
-           - Execute query using execute_query_pandas()
-           - Convert results to list of values
-
-        2. Find best matches:
-           - Initialize empty matches list
-           - For each value in database:
-               Calculate fuzzy match score using fuzz.token_sort_ratio()
-               If score >= 80:
-                   Add to matches list with score
-
-        3. Sort matches by score in descending order
-
-        4. Return matches list:
-           [
-               {
-                   "value": matched value,
-                   "score": match score
-               },
-               ...
-           ] 
+        
+        1. Initialize empty list for value mappings:
+           value_mappings = []
+        
+        2. Set min_match_score to 45
+        
+        3. Search for matching value in database:
+           match = search_term_in_column(
+               term=entity['value'],
+               table_name=entity['table'],
+               column_name=entity['column']
+           )
+        
+        4. If match exists and score > min_match_score:
+           Add to value_mappings:
+           {
+               "original_value": entity['value'],
+               "matched_value": match['matched_value'],
+               "score": match['score']
+           }
+        
+        5. Return value_mappings 

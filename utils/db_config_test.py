@@ -1,4 +1,4 @@
-from db_config import execute_query, execute_query_pandas
+from db_config import execute_query_pandas
 import pandas as pd
 import json
 import os
@@ -6,9 +6,9 @@ import os
 def test_connection():
     """Test basic database connection"""
     try:
-        result = execute_query("SELECT 1 as test")
+        df = execute_query_pandas("SELECT 1 as test")
         print("✅ Database connection successful!")
-        print(f"Test query result: {result}")
+        print(f"Test query result:\n{df}")
         return True
     except Exception as e:
         print("❌ Database connection failed!")
