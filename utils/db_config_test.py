@@ -57,7 +57,7 @@ def generate_schema_dump():
         tables_df = get_table_info()
         
         schema_info = {
-            "database_schema": []
+            "db_schema": []
         }
         
         for _, table_row in tables_df.iterrows():
@@ -82,10 +82,10 @@ def generate_schema_dump():
                 }
                 table_info["columns"].append(column_info)
             
-            schema_info["database_schema"].append(table_info)
+            schema_info["db_schema"].append(table_info)
         
         # Save to file in utils folder
-        output_path = os.path.join(os.path.dirname(__file__), 'database_schema.json')
+        output_path = os.path.join(os.path.dirname(__file__), 'db_schema.json')
         with open(output_path, 'w') as f:
             json.dump(schema_info, f, indent=2)
         

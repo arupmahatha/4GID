@@ -6,7 +6,7 @@ python-dotenv>=1.1.0
 
 # String matching and search
 fuzzywuzzy>=0.18.0
-python-Levenshtein>=0.27.1  # Optional, but improves fuzzywuzzy performance
+python-Levenshtein>=0.21.1  # Optional, but improves fuzzywuzzy performance
 
 # Database and data handling
 sqlalchemy>=2.0.40
@@ -19,3 +19,7 @@ rich>=14.0.0  # For beautiful console output
 
 # Data generation
 faker>=37.1.0
+
+# Schema embeddings
+sentence-transformers==2.2.2
+scikit-learn>=1.4.0

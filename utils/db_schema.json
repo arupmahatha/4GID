@@ -1,5 +1,5 @@
 {
-  "database_schema": [
+  "db_schema": [
     {
       "table_name": "admin_permissions",
       "columns": [

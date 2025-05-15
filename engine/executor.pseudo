@@ -6,8 +6,6 @@ Class SQLExecutor:
         
         # List of allowed query starting terms
         ALLOWED_STARTS = {'select', 'with'}
-        
-        DATABASE_PATH = "/Users/arup/Documents/4GID/our_database.db"
 
     Function _is_safe_query(sql_query):
         /*
@@ -42,19 +40,10 @@ Class SQLExecutor:
         1. Check query safety using _is_safe_query
             If not safe: Return (False, [], "", error_message)
         
-        2. Set connection = None
-        3. Try:
-            a. Create new connection to DATABASE_PATH
-            b. Create cursor
-            c. Execute query
-            d. Get column names from cursor description
-            e. Fetch all rows
-            f. Create result list:
-                [{column_name: value} for each row]
-            g. Format results using format_results_for_analysis
-            h. Return (True, results, formatted_results, "")
-        4. On SQLite error or any other error:
-            Return (False, [], "", error_message)
-        5. Finally:
-            If connection exists:
-                Close connection 
+        2. Try:
+            a. Execute query using execute_query_pandas from db_config
+            b. Convert DataFrame to list of dictionaries
+            c. Format results using format_results_for_analysis
+            d. Return (True, results, formatted_results, "")
+        3. On any error:
+            Return (False, [], "", error_message) 

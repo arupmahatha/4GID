@@ -1,6 +1,6 @@
 from typing import Dict, List, Tuple
-import sqlite3
 import re
+from utils.db_config import execute_query, execute_query_pandas
 
 class SQLExecutor:
     # List of dangerous SQL operations to block
@@ -8,8 +8,6 @@ class SQLExecutor:
     
     # List of allowed query starting terms
     ALLOWED_STARTS = {'select', 'with'}
-    
-    DATABASE_PATH = "/Users/arup/Documents/4GID/our_database.db"
 
     def _is_safe_query(self, sql_query: str) -> Tuple[bool, str]:
         """
@@ -83,34 +81,17 @@ class SQLExecutor:
         if not is_safe:
             return False, [], "", error_msg
 
-        connection = None
         try:
-            # Establish new connection for this execution
-            connection = sqlite3.connect(self.DATABASE_PATH)
-            cursor = connection.cursor()
-
-            # Execute the query
-            cursor.execute(sql_query)
+            # Execute query using the actual database connection
+            results_df = execute_query_pandas(sql_query)
             
-            # Get column names from cursor description
-            columns = [description[0] for description in cursor.description]
-            
-            # Fetch all rows and create result list
-            rows = cursor.fetchall()
-            results = [
-                {columns[i]: value for i, value in enumerate(row)}
-                for row in rows
-            ]
+            # Convert DataFrame to list of dictionaries
+            results = results_df.to_dict('records')
             
             # Format results for analysis
             formatted_results = self.format_results_for_analysis(results)
             
             return True, results, formatted_results, ""
             
-        except sqlite3.Error as e:
-            return False, [], "", str(e)
         except Exception as e:
-            return False, [], "", str(e)
-        finally:
-            if connection:
-                connection.close() 
+            return False, [], "", str(e) 

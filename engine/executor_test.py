@@ -1,50 +1,50 @@
+import unittest
 from executor import SQLExecutor
 
-def main():
-    """Test SQLExecutor functionality"""
-    executor = SQLExecutor()
+class TestSQLExecutor(unittest.TestCase):
+    def setUp(self):
+        self.executor = SQLExecutor()
 
-    test_query = """
-        WITH ProgramMetrics AS (
-            SELECT 
-                p.id as program_id,
-                p.name as program_name,
-                COUNT(DISTINCT ps.specialization_code) as num_specializations,
-                COUNT(DISTINCT sc.course_code) as num_courses,
-                COUNT(DISTINCT lpr.learner_code) as enrolled_learners,
-                ROUND(AVG(CAST(le.year_of_graduation - le.year_of_joining AS FLOAT)), 1) as avg_completion_time
-            FROM Program p
-            LEFT JOIN Program_Specialization ps ON p.id = ps.program_code
-            LEFT JOIN Specialization_Course sc ON ps.specialization_code = sc.specialization_code
-            LEFT JOIN Learner_Program_Requirement lpr ON p.id = lpr.program_requirement_code
-            LEFT JOIN Learner_Education le ON lpr.learner_code = le.learner_code
-            GROUP BY p.id, p.name
-        )
-        SELECT 
-            program_name,
-            num_specializations,
-            num_courses,
-            enrolled_learners,
-            avg_completion_time as avg_years_to_complete,
-            ROUND(100.0 * enrolled_learners / NULLIF(SUM(enrolled_learners) OVER (), 0), 2) as enrollment_percentage
-        FROM ProgramMetrics
-        WHERE enrolled_learners > 0
-        ORDER BY enrolled_learners DESC;
-        """
-    # test_query = "DELETE FROM Institution WHERE id = 1;"
+    def test_safe_query_execution(self):
+        # Test a safe SELECT query
+        query = "SELECT * FROM users LIMIT 5"
+        result = self.executor.main_executor(query)
+        self.assertIsNotNone(result)
+        self.assertIn('formatted_results', result)
+        self.assertIn('error', result)
+        self.assertFalse(result['error'])
 
-    print(f"\nExecuting Query:{test_query}")
-    
-    success, results, formatted_results, error = executor.main_executor(test_query)
-    
-    if success:
-        print(f"\nSuccess! Found {len(results)} rows")
-        print("\nFormatted Results:")
-        print(formatted_results)
-        print("\nRaw Results:")
-        print(results)
-    else:
-        print(f"\nFailed: {error}")
+    def test_blocked_operations(self):
+        # Test blocked operations
+        blocked_queries = [
+            "DROP TABLE users",
+            "DELETE FROM users",
+            "UPDATE users SET name = 'test'",
+            "INSERT INTO users VALUES (1, 'test')",
+            "TRUNCATE TABLE users"
+        ]
+        
+        for query in blocked_queries:
+            result = self.executor.main_executor(query)
+            self.assertTrue(result['error'])
+            self.assertIn('Blocked operation', result['formatted_results'])
 
-if __name__ == "__main__":
-    main() 
+    def test_invalid_query(self):
+        # Test invalid SQL syntax
+        query = "SELECT * FROM nonexistent_table"
+        result = self.executor.main_executor(query)
+        self.assertTrue(result['error'])
+        self.assertIn('Error executing query', result['formatted_results'])
+
+    def test_query_formatting(self):
+        # Test query result formatting
+        query = "SELECT id, name FROM users LIMIT 2"
+        result = self.executor.main_executor(query)
+        self.assertFalse(result['error'])
+        formatted = result['formatted_results']
+        self.assertIsInstance(formatted, str)
+        self.assertIn('id', formatted.lower())
+        self.assertIn('name', formatted.lower())
+
+if __name__ == '__main__':
+    unittest.main() 
