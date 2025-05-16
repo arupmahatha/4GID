@@ -1,10 +1,7 @@
 Class SQLGenerator:
-
-    Function __init__():
-        /*
-        Purpose: Initialize the generator with schema embedder
-        */
-        1. Create new SchemaEmbedder instance
+    Constructor:
+        Initialize schema_embedder with SchemaEmbedder()
+        Set db_schema_path to utils/db_schema.pkl
 
     Function main_generator(user_query, llm_model = "mistral:instruct"):
         /*
@@ -13,32 +10,40 @@ Class SQLGenerator:
         Parameters:
             - user_query: Natural language query from user
             - llm_model: The LLM model to use for generation (default: "mistral:instruct")
-        Returns: Dictionary containing metadata and the generated SQL query
+        Returns: Dictionary containing metadata and the generated SQL query (no additional text/explanations)
         */
-        1. Get relevant schema information:
-           formatted_metadata = schema_embedder.get_formatted_schema(user_query)
+        1. Get relevant tables and columns:
+            - Use schema_embedder.query_tables() to get relevant tables and columns for the query
+            - This returns list of (table_name, columns) tuples
 
-        2. Create initial prompt:
-           "Given these tables and columns:
-            {formatted_metadata}
-            
-            Generate a single SQL query for this request:
-            {user_query}
-            
-            Requirements:
-            - Return ONLY the raw SQL query text, no markdown formatting
-            - Do not include ```sql or ``` markers
-            - No explanations or additional text
-            - The query can be simple or complex depending on what's needed
-            - Use appropriate JOINs, subqueries, or aggregations if required
-            - Ensure the query is complete and executable
-            - When filtering on columns with choices, use the exact choice values provided in the metadata"
+        2. Format table and column information:
+            - Create empty result list
+            - For each (table_name, columns) from step 1:
+                Format as: "table_name (column1, column2, ...)"
+                Add blank line for readability
+            - Join all with newlines to create formatted_metadata
 
-        3. Get SQL from LLM using llm_call.generate_text() with model parameter
+        3. Create initial prompt:
+            "Given these tables and columns:
+             {formatted_metadata}
+             
+             Generate a single SQL query for this request:
+             {user_query}
+             
+             Requirements:
+             - Return ONLY the raw SQL query text, no markdown formatting
+             - Do not include ```sql or ``` markers
+             - No explanations or additional text
+             - The query can be simple or complex depending on what's needed
+             - Use appropriate JOINs, subqueries, or aggregations if required
+             - Ensure the query is complete and executable
+             - When filtering on columns with choices, use the exact choice values provided in the metadata"
 
-        4. Return:
+        4. Get SQL from LLM using llm_call.generate_text() with model parameter
+
+        5. Return dictionary containing:
             {
                 "user_query": original user query,
-                "formatted_metadata": formatted schema information,
-                "generated_sql": SQL generated in step 3
+                "formatted_metadata": formatted table and column information,
+                "generated_sql": SQL generated in step 4 (single query only)
             }

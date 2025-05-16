@@ -12,10 +12,16 @@ def main():
     matcher = ValueMatcher()
     
     # Test case with a single entity
+    # test_entity = {
+    #     "table": "admin_users",
+    #     "column": "firstname",
+    #     "value": "Chathnya"
+    # }
+
     test_entity = {
-        "table": "admin_users",
-        "column": "firstname",
-        "value": "Chathnya"
+        "table": "poims_users",
+        "column": "username",
+        "value": "dayarB"
     }
     
     try:

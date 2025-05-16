@@ -1,170 +1,180 @@
 # SQL Generation and Analysis System
 
-A sophisticated system that leverages multiple Large Language Models (LLMs) to generate, validate, and execute SQL queries from natural language input. The system uses a multi-model approach with DeepSeek, Mistral, and Gemini for robust query generation and validation.
+A sophisticated system that leverages multiple Large Language Models (LLMs) to generate, refine, and analyze SQL queries from natural language input. The system uses an ensemble approach with DeepSeek, Mistral, and Gemini models to ensure high-quality SQL generation and validation.
 
-## Features
+## System Architecture
 
-- **Multi-Model SQL Generation**: Utilizes multiple LLMs (DeepSeek and Mistral) to generate SQL queries from natural language
-- **Intelligent Validation**: Uses Gemini as a decision maker to choose the best generated SQL query
-- **Entity Extraction**: Extracts and analyzes entities from generated SQL queries
-- **Value Matching**: Implements fuzzy matching for SQL values
-- **Query Refinement**: Refines and optimizes generated SQL queries
-- **Result Analysis**: Executes queries and provides detailed analysis of results
+The system is built with a modular architecture consisting of several key components:
 
-## Our Approach
+### 1. LLM Configuration (`llm_config/`)
+- Manages interactions with multiple LLM providers (HuggingFace, DeepSeek, Gemini)
+- Handles API calls, conversation history, and response formatting
+- Supports multiple models with configurable parameters
+- Maintains conversation context for improved response quality
 
-### Multi-Model Architecture
-Our system employs a unique multi-model architecture that combines the strengths of different LLMs:
-- **DeepSeek**: Primary model for SQL generation with strong understanding of database schemas
-- **Mistral**: Secondary model providing alternative SQL generation approaches
-- **Gemini**: Acts as an intelligent validator to select the most accurate query
+### 2. Core Engine Components (`engine/`)
 
-### Workflow Process
-1. **Natural Language Processing**
-   - Input query analysis
-   - Entity recognition
-   - Intent classification
+#### SQL Generator
+- Converts natural language queries into SQL using LLMs
+- Integrates with schema embedder for context-aware generation
+- Supports complex queries with JOINs, subqueries, and aggregations
+- Ensures SQL syntax correctness and completeness
+
+#### Entity Extractor
+- Analyzes generated SQL to identify real-world entities
+- Extracts table, column, and value mappings
+- Filters out computed columns, aliases, and invalid entities
+- Maintains strict validation rules for entity extraction
+
+#### Value Matcher
+- Matches extracted entities against database values
+- Validates entity existence and relationships
+- Ensures data consistency and accuracy
+
+#### SQL Refiner
+- Refines generated SQL based on entity matching results
+- Optimizes query structure and performance
+- Ensures query correctness and efficiency
+
+#### SQL Executor
+- Executes refined SQL queries against the database
+- Handles query execution and result retrieval
+- Manages database connections and transactions
+
+#### Result Analyzer
+- Analyzes query execution results
+- Provides insights and explanations
+- Generates human-readable summaries
+
+### 3. Utilities (`utils/`)
+- Schema Embedder: Handles database schema embedding and similarity search
+- Database Configuration: Manages database connections and configurations
+- Search Utilities: Provides fuzzy search and matching capabilities
+- Schema Files: Contains database schema definitions in JSON and pickle formats
+
+## Workflow
+
+1. **Query Input**
+   - User provides natural language query
+   - System processes and normalizes input
 
 2. **SQL Generation**
-   - Parallel generation using multiple LLMs
-   - Schema-aware query construction
-   - Syntax validation
+   - Multiple LLMs generate SQL independently
+   - Schema context is provided for accurate generation
+   - Generated SQL is validated for syntax and structure
 
-3. **Query Validation**
-   - Cross-model comparison
-   - Semantic analysis
-   - Performance optimization
+3. **Entity Extraction**
+   - System extracts entities from generated SQL
+   - Identifies tables, columns, and values
+   - Validates entity relationships
 
-4. **Execution and Analysis**
-   - Safe query execution
-   - Result validation
-   - Performance metrics collection
+4. **Value Matching**
+   - Matches extracted entities against database
+   - Validates entity existence
+   - Ensures data consistency
 
-## Current Developments
+5. **SQL Refinement**
+   - Refines SQL based on matching results
+   - Optimizes query structure
+   - Ensures query efficiency
 
-### Active Research Areas
-1. **Enhanced Entity Recognition**
-   - Improving accuracy of entity extraction from natural language
-   - Better handling of complex relationships between entities
-   - Integration with domain-specific knowledge bases
+6. **Query Execution**
+   - Executes refined SQL
+   - Retrieves results
+   - Handles any execution errors
 
-2. **Query Optimization**
-   - Development of more efficient SQL generation algorithms
-   - Implementation of query performance prediction
-   - Automated query optimization techniques
+7. **Result Analysis**
+   - Analyzes execution results
+   - Provides insights
+   - Generates summaries
 
-3. **Multi-Model Collaboration**
-   - Advanced model selection strategies
-   - Improved consensus mechanisms
-   - Dynamic model weighting based on query type
+## Setup and Configuration
 
-### Recent Improvements
-- Implemented fuzzy matching for better value recognition
-- Enhanced error handling and recovery mechanisms
-- Added support for complex nested queries
-- Improved handling of temporal queries
-- Integration of performance monitoring tools
+1. **Environment Setup**
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   pip install -r requirements.txt
+   ```
 
-### Upcoming Features
-1. **Advanced Analytics**
-   - Query pattern analysis
-   - Usage statistics and insights
-   - Performance optimization recommendations
+2. **API Keys**
+   Set the following environment variables:
+   - `HUGGINGFACE_API_KEY`
+   - `DEEPSEEK_API_KEY`
+   - `GEMINI_API_KEY`
 
-2. **Extended Language Support**
-   - Support for more natural language variations
-   - Better handling of domain-specific terminology
-   - Multi-language query support
+3. **Database Configuration**
+   - Configure database connection in `utils/db_config.py`
+   - Ensure schema is properly embedded using `utils/schema_embedder.py`
 
-3. **Enhanced Security**
-   - Query sanitization improvements
-   - Access control integration
-   - Audit logging capabilities
+## Usage
+
+The system can be used through the Jupyter notebook interface (`workflow_test.ipynb`) or programmatically:
+
+```python
+from engine.generator import SQLGenerator
+from engine.entity_extractor import EntityExtractor
+# ... import other components as needed
+
+# Initialize components
+generator = SQLGenerator()
+extractor = EntityExtractor()
+
+# Generate SQL
+result = generator.main_generator("Your natural language query")
+
+# Extract entities
+entities = extractor.main_entity_extractor(result['generated_sql'])
+```
+
+## Testing
+
+The system includes comprehensive test suites for each component:
+- `engine/*_test.py`: Tests for core engine components
+- `utils/*_test.py`: Tests for utility functions
+- `llm_config/llm_call_test.py`: Tests for LLM configuration
+
+Run tests using:
+```bash
+python -m pytest engine/*_test.py utils/*_test.py llm_config/*_test.py
+```
 
 ## Project Structure
 
 ```
 .
 ├── engine/                 # Core SQL generation and processing engine
-├── llm_config/            # LLM configuration and API settings
-├── schema/                # Database schema definitions
-├── synthetic_data/        # Synthetic data for testing
-├── test_cases_documentations/  # Test case documentation
-├── utils/                 # Utility functions and helpers
-├── report_documentations/ # Documentation for reports
-├── workflow_test.ipynb    # Jupyter notebook demonstrating the workflow
-└── requirements.txt       # Project dependencies
-```
-
-## Database Schema
-
-The system works with a comprehensive database schema that includes:
-
-- **Institution**: Educational institutions with various types (Public University, Private University, etc.)
-- **Learner**: Student information including personal and educational details
-- **Course**: Course information and structure
-- **Program**: Academic programs and their requirements
-- **Department**: Academic and non-academic departments
-- **Knowledge Partner**: External knowledge partners
-- **And more...**
-
-## Prerequisites
-
-- Python 3.8 or higher
-- Access to LLM APIs (DeepSeek, Mistral, Gemini)
-- SQLite database (or compatible database system)
-
-## Installation
-
-1. Clone the repository:
-```bash
-git clone [repository-url]
-cd [repository-name]
-```
-
-2. Create and activate a virtual environment:
-```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-```
-
-3. Install dependencies:
-```bash
-pip install -r requirements.txt
+│   ├── generator.py       # SQL query generation
+│   ├── entity_extractor.py # Entity extraction from SQL
+│   ├── value_matcher.py   # Value matching utilities
+│   ├── refiner.py        # SQL query refinement
+│   ├── executor.py       # SQL query execution
+│   └── analyzer.py       # Result analysis
+├── llm_config/           # LLM configuration and API settings
+│   └── llm_call.py      # LLM API interaction utilities
+├── utils/               # Utility functions and helpers
+│   ├── schema_embedder.py # Schema embedding utilities
+│   ├── db_config.py     # Database configuration
+│   ├── search.py        # Search utilities
+│   ├── db_schema.json   # Database schema definition
+│   └── db_schema.pkl    # Embedded schema data
+├── workflow_test.ipynb  # Jupyter notebook demonstrating the workflow
+└── requirements.txt     # Project dependencies
 ```
 
 ## Dependencies
 
-- requests>=2.31.0
-- python-dotenv>=1.0.0
-- fuzzywuzzy>=0.18.0
-- python-Levenshtein>=0.21.0
-- sqlalchemy>=2.0.0
-- pandas>=2.0.0
-- numpy>=1.24.0
-- faker>=20.0.0
+- Python 3.8 or higher
+- PostgreSQL database
+- Access to LLM APIs (DeepSeek, Mistral, Gemini)
 
-## Usage
+Key Python packages:
+- requests>=2.32.3: HTTP requests for API calls
+- python-dotenv>=1.1.0: Environment variable management
+- sqlalchemy>=2.0.40: Database ORM
+- pandas>=2.2.3: Data manipulation
+- sentence-transformers==2.2.2: Schema embeddings
+- scikit-learn>=1.4.0: Machine learning utilities
+- pytest>=8.0.0: Testing framework
 
-1. Set up your environment variables for LLM API access
-2. Run the workflow test notebook:
-```bash
-jupyter notebook workflow_test.ipynb
-```
-
-The notebook demonstrates the complete workflow:
-1. SQL generation using multiple LLMs
-2. Entity extraction from SQL
-3. Value matching in SQL
-4. SQL refinement
-5. Query execution
-6. Result analysis
-
-## Example Queries
-
-The system can handle various types of queries, such as:
-- Finding specific learners by name or email
-- Analyzing student distributions by gender and age
-- Querying institution-specific information
-- Tracking course completion status
-- Analyzing enrollment patterns
+For a complete list of dependencies, see `requirements.txt`.
